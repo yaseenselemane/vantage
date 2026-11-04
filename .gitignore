@@ -1,0 +1,19 @@
+# Dependencies & generated
+node_modules/
+*.db
+*.db-wal
+*.db-shm
+dist/
+.next/
+
+# Runtime state
+.vantage/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+.env.local
+config.local.json

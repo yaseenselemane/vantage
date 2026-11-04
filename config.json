@@ -1,0 +1,6 @@
+{
+  "agent": { "port": 8123, "pollSeconds": 3, "scanSeconds": 15, "latencySeconds": 5, "openBrowser": true },
+  "router": { "enabled": true, "ip": "192.168.0.1", "user": "admin", "pass": "" },
+  "retention": { "rawHours": 48, "hourlyDays": 365, "eventDays": 90 },
+  "alerts": { "wifiSignalBelow": 45, "linkUtilAbove": 85, "deviceOffline": true, "toasts": true }
+}

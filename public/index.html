@@ -1,0 +1,1088 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="dark light" />
+<title>vantage — your network</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#08090b; --bg-1:#0d0f12; --bg-2:#131619; --bg-3:#1a1e22;
+  --line-1:rgba(255,255,255,.055); --line-2:rgba(255,255,255,.10); --line-3:rgba(255,255,255,.16);
+  --text-1:#f0f2f5; --text-2:#98a1ab; --text-3:#5a636d;
+  --accent:#6e7bff; --accent-soft:rgba(110,123,255,.14); --violet:#9b6eff;
+  --up:#34d399; --warn:#fbbf24; --crit:#fb7185; --unknown:#5c6670;
+  --glass-bg:color-mix(in oklab,#0d0f12 68%,transparent);
+  --glass-border:rgba(255,255,255,.065);
+  --shadow-1:0 1px 2px rgba(0,0,0,.35),0 10px 30px -18px rgba(0,0,0,.8);
+  --shadow-2:0 2px 6px rgba(0,0,0,.4),0 32px 64px -28px rgba(0,0,0,.9);
+  --ease-out:cubic-bezier(.16,1,.3,1);
+}
+[data-theme="light"]{
+  --bg-0:#f6f7f9; --bg-1:#fff; --bg-2:#f2f4f7; --bg-3:#e9ecf1;
+  --line-1:rgba(9,12,18,.07); --line-2:rgba(9,12,18,.12); --line-3:rgba(9,12,18,.20);
+  --text-1:#0b0e13; --text-2:#5c6672; --text-3:#8b949f;
+  --accent:#4f5ee8; --accent-soft:rgba(79,94,232,.10); --violet:#7c4fe8;
+  --up:#0f9d6e; --warn:#c77d05; --crit:#dc3d5a; --unknown:#98a1ab;
+  --glass-bg:color-mix(in oklab,#fff 72%,transparent);
+  --glass-border:rgba(9,12,18,.07);
+  --shadow-1:0 1px 2px rgba(9,12,18,.06),0 10px 30px -18px rgba(9,12,18,.28);
+  --shadow-2:0 2px 6px rgba(9,12,18,.07),0 32px 64px -28px rgba(9,12,18,.35);
+}
+*,*::before,*::after{box-sizing:border-box;border-color:var(--line-1)}
+html{-webkit-font-smoothing:antialiased;background:var(--bg-0);font-size:13px}
+body{margin:0;height:100vh;overflow:hidden;background:var(--bg-0);color:var(--text-1);
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.55;
+  transition:background-color .4s var(--ease-out),color .4s var(--ease-out)}
+.num,.mono{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.94em;letter-spacing:-.01em}
+::selection{background:rgba(110,123,255,.32)}
+:focus-visible{outline:none;box-shadow:0 0 0 1px var(--bg-0),0 0 0 3px var(--accent);border-radius:6px}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:99px;border:3px solid transparent;background-clip:content-box}
+
+.glass{background:var(--glass-bg);backdrop-filter:blur(28px) saturate(170%);-webkit-backdrop-filter:blur(28px) saturate(170%);border-color:var(--glass-border)}
+.panel{position:relative;background:var(--bg-1);border:1px solid var(--line-1);border-radius:18px;
+  box-shadow:var(--shadow-1);overflow:hidden;
+  transition:border-color .28s var(--ease-out),box-shadow .28s var(--ease-out),transform .28s var(--ease-out)}
+.panel::before{content:"";position:absolute;inset:0 0 auto 0;height:1px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.07) 22%,rgba(255,255,255,.11) 50%,rgba(255,255,255,.07) 78%,transparent)}
+[data-theme="light"] .panel::before{background:linear-gradient(90deg,transparent,rgba(9,12,18,.05) 22%,rgba(9,12,18,.08) 50%,rgba(9,12,18,.05) 78%,transparent)}
+.panel.hoverable:hover{border-color:var(--line-2);box-shadow:var(--shadow-2);transform:translateY(-1px)}
+.grid-bg{background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.045) 1px,transparent 0);background-size:22px 22px}
+[data-theme="light"] .grid-bg{background-image:radial-gradient(circle at 1px 1px,rgba(9,12,18,.05) 1px,transparent 0)}
+
+#app{display:flex;height:100vh;width:100vw;overflow:hidden}
+aside.rail{position:relative;z-index:20;width:216px;flex:0 0 auto;display:flex;flex-direction:column;
+  border-right:1px solid var(--glass-border);transition:width .38s var(--ease-out)}
+aside.rail.collapsed{width:68px}
+.brand{display:flex;align-items:center;gap:10px;height:54px;padding:0 18px}
+.brand .mark{display:grid;place-items:center;width:26px;height:26px;border-radius:8px;flex:0 0 auto;
+  background:linear-gradient(140deg,var(--accent),var(--violet));box-shadow:0 0 22px -6px var(--accent)}
+.brand .mark svg{width:13px;height:13px;stroke:#fff;stroke-width:2.6;fill:none}
+.brand .wordmark{font-size:13.5px;font-weight:650;letter-spacing:-.015em;white-space:nowrap;overflow:hidden;transition:opacity .2s,width .3s var(--ease-out)}
+aside.rail.collapsed .wordmark{opacity:0;width:0}
+nav.rail-nav{display:flex;flex-direction:column;gap:2px;padding:12px 10px 0}
+.nav-item{position:relative;display:flex;align-items:center;gap:10px;height:34px;padding:0 10px;
+  border-radius:9px;color:var(--text-3);cursor:pointer;border:1px solid transparent;
+  transition:color .2s,background .2s,border-color .2s;user-select:none}
+.nav-item svg{width:15px;height:15px;flex:0 0 auto;stroke:currentColor;stroke-width:1.9;fill:none}
+.nav-item .label{font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden}
+aside.rail.collapsed .nav-item .label{opacity:0}
+.nav-item:hover{color:var(--text-2);background:rgba(255,255,255,.025)}
+.nav-item.active{color:var(--text-1);background:rgba(255,255,255,.045);border-color:var(--line-1)}
+[data-theme="light"] .nav-item.active{background:#fff;border-color:var(--line-2)}
+.nav-item.active::before{content:"";position:absolute;left:-10px;top:50%;transform:translateY(-50%);
+  width:2px;height:16px;border-radius:2px;background:var(--accent);box-shadow:0 0 12px 0 var(--accent)}
+.rail-footer{margin-top:auto;padding:0 10px 12px}
+
+#main{position:relative;display:flex;min-width:0;flex:1;flex-direction:column}
+header.topbar{position:relative;z-index:10;display:flex;align-items:center;gap:16px;height:54px;
+  flex:0 0 auto;padding:0 20px;border-bottom:1px solid var(--glass-border)}
+.crumbs{font-size:13px;font-weight:600;letter-spacing:-.01em}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.live-pill{display:flex;align-items:center;gap:6px;height:30px;padding:0 10px;border-radius:8px;
+  border:1px solid rgba(52,211,153,.22);background:rgba(52,211,153,.07);transition:all .35s var(--ease-out)}
+.live-pill.off{border-color:rgba(251,113,133,.25);background:rgba(251,113,133,.08)}
+.live-pill.demo{border-color:rgba(251,191,36,.25);background:rgba(251,191,36,.08)}
+.live-dot{width:5px;height:5px;border-radius:99px;background:var(--up);animation:breathe 2.2s ease-in-out infinite}
+.live-pill.off .live-dot{background:var(--crit);animation:none}
+.live-pill.demo .live-dot{background:var(--warn);animation:none}
+.live-text{font-size:10.5px;font-weight:650;letter-spacing:.04em;color:var(--up)}
+.live-pill.off .live-text{color:var(--crit)}
+.live-pill.demo .live-text{color:var(--warn)}
+.icon-btn{display:grid;place-items:center;width:30px;height:30px;border-radius:8px;
+  border:1px solid var(--line-1);background:transparent;color:var(--text-3);cursor:pointer;transition:all .2s var(--ease-out)}
+.icon-btn:hover{border-color:var(--line-2);color:var(--text-1);background:rgba(255,255,255,.03)}
+.icon-btn:active{transform:scale(.94)}
+.icon-btn svg{width:13.5px;height:13.5px;stroke:currentColor;stroke-width:1.9;fill:none}
+
+main.content{position:relative;min-height:0;flex:1;overflow-y:auto}
+.content-inner{max-width:1440px;margin:0 auto;padding:20px}
+
+.hero{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media(max-width:1180px){.hero{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.hero{grid-template-columns:1fr}}
+.split{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:12px;margin-top:12px}
+@media(max-width:1180px){.split{grid-template-columns:1fr}}
+.devices-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media(max-width:1180px){.devices-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.devices-grid{grid-template-columns:1fr}}
+.section{display:flex;align-items:baseline;justify-content:space-between;margin:20px 2px 10px}
+.section h2{font-size:12.5px;font-weight:650;letter-spacing:-.01em;margin:0}
+.section .hint{font-size:10.5px;color:var(--text-3)}
+
+.stat{padding:15px}
+.stat-head{display:flex;align-items:flex-start;justify-content:space-between}
+.stat-label{display:flex;align-items:center;gap:6px}
+.stat-label svg{width:13px;height:13px;stroke-width:2.2;fill:none}
+.stat-label span{font-size:10.5px;font-weight:650;letter-spacing:.10em;text-transform:uppercase;color:var(--text-3)}
+.stat-badge{padding:2px 6px;border-radius:99px;font-size:9.5px;font-weight:650;letter-spacing:.08em;text-transform:uppercase}
+.stat-body{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:10px}
+.stat-value{font-size:26px;font-weight:650;letter-spacing:-.03em;line-height:1}
+.stat-unit{font-size:11.5px;font-weight:500;color:var(--text-3);margin-left:6px}
+.stat-foot{margin-top:6px;font-size:11px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spark{opacity:.75;transition:opacity .3s}
+.panel:hover .spark{opacity:1}
+
+.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:15px 15px 0}
+.panel-head h3{margin:0;font-size:12.5px;font-weight:650;letter-spacing:-.01em}
+.panel-head p{margin:2px 0 0;font-size:10.5px;color:var(--text-3)}
+.legend{display:flex;align-items:center;gap:12px}
+.legend span{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--text-3)}
+.legend i{display:block;width:12px;height:2px;border-radius:2px}
+.chart-wrap{position:relative;padding:8px 12px 12px}
+canvas#traffic{display:block;width:100%;height:232px}
+
+.events .list{padding:6px 8px 10px;max-height:292px;overflow-y:auto}
+.event{display:flex;gap:8px;padding:6px 8px;border-radius:8px;transition:background .18s}
+.event:hover{background:rgba(255,255,255,.025)}
+.event svg{width:12px;height:12px;margin-top:3px;flex:0 0 auto;stroke-width:2;fill:none}
+.event .body{min-width:0;flex:1}
+.event .msg{font-size:11.5px;color:var(--text-1)}
+.event .meta{display:flex;gap:6px;align-items:center;margin-top:2px;font-size:10px;color:var(--text-3)}
+.event .kind{text-transform:uppercase;letter-spacing:.06em}
+.event .ack{align-self:flex-start;padding:2px 6px;border-radius:6px;border:1px solid var(--line-1);
+  background:transparent;color:var(--text-3);font-family:inherit;font-size:9.5px;font-weight:500;cursor:pointer;
+  opacity:0;transition:all .2s}
+.event:hover .ack{opacity:1}
+.event .ack:hover{border-color:var(--line-2);color:var(--text-1)}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:34px 12px;text-align:center}
+.empty-state svg{width:16px;height:16px;stroke:var(--up);stroke-width:2;fill:none;margin-bottom:8px}
+.empty-state p{margin:0;font-size:12px;color:var(--text-2)}
+.empty-state small{margin-top:2px;font-size:10.5px;color:var(--text-3)}
+
+/* connection strip */
+.conn{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1px;margin-top:12px;
+  background:var(--line-1);border-radius:18px;overflow:hidden;border:1px solid var(--line-1)}
+@media(max-width:900px){.conn{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.conn-cell{background:var(--bg-1);padding:12px 14px}
+.conn-cell .k{font-size:9.5px;font-weight:650;letter-spacing:.09em;text-transform:uppercase;color:var(--text-3)}
+.conn-cell .v{margin-top:3px;font-size:13px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conn-cell .v.mono{font-size:11.5px;font-weight:500}
+.signal-bar{display:flex;align-items:center;gap:2px;margin-top:6px;height:3px}
+.signal-bar i{flex:1;height:100%;border-radius:2px;background:rgba(255,255,255,.07)}
+.signal-bar i.on{background:var(--up)}
+.signal-bar.weak i.on{background:var(--warn)}
+.signal-bar.bad i.on{background:var(--crit)}
+
+/* network map */
+.map-wrap{position:relative;height:400px;margin-top:4px}
+canvas#map{display:block;width:100%;height:100%;cursor:pointer}
+.map-legend{display:flex;align-items:center;gap:16px;padding:0 15px 12px;font-size:10.5px;color:var(--text-3)}
+.map-legend .dot{width:7px;height:7px;border-radius:99px;border:1px solid currentColor;margin-right:6px;display:inline-block;vertical-align:-1px}
+.map-legend .spacer{margin-left:auto}
+
+/* device card */
+.device{padding:15px}
+.dev-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.dev-name{display:flex;align-items:center;gap:8px;min-width:0}
+.dev-name h3{margin:0;font-size:13px;font-weight:650;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dev-sub{display:flex;align-items:center;gap:8px;margin-top:2px;padding-left:16px}
+.dev-sub .ip{font-size:11px;color:var(--text-3)}
+.dev-sub .sep{color:var(--text-3)}
+.dev-sub .vend{font-size:11px;color:var(--text-3)}
+.dev-foot{display:flex;align-items:center;gap:10px;margin-top:12px;padding-top:10px;
+  border-top:1px solid var(--line-1);font-size:10.5px;color:var(--text-3)}
+.dev-foot .right{margin-left:auto}
+.dev-foot .mono{font-size:10px}
+
+.status{position:relative;display:inline-grid;place-items:center;flex:0 0 auto}
+.status .ring{position:absolute;inset:0;border-radius:99px;border:1px solid currentColor}
+.status .core{border-radius:99px;background:currentColor}
+.status .pulse{position:absolute;inset:0;border-radius:99px;border:1px solid currentColor;animation:pulse-ring 2.4s var(--ease-out) infinite}
+
+/* banner */
+.banner{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;
+  border:1px solid rgba(251,191,36,.28);background:rgba(251,191,36,.08);color:var(--warn);
+  font-size:11.5px;margin-bottom:12px}
+.banner code{font-family:"JetBrains Mono",monospace;font-size:11px;background:rgba(0,0,0,.25);
+  padding:2px 6px;border-radius:5px;color:var(--text-1)}
+.banner.err{border-color:rgba(251,113,133,.28);background:rgba(251,113,133,.08);color:var(--crit)}
+
+/* heatmap */
+.heat-grid{display:grid;grid-template-columns:32px repeat(24,1fr);gap:3px;padding:0 15px 8px}
+.heat-hour{font-size:8px;color:var(--text-3);text-align:center;font-variant-numeric:tabular-nums}
+.heat-day{font-size:9px;color:var(--text-3);display:flex;align-items:center}
+.heat-cell{aspect-ratio:1;border-radius:3px;background:rgba(255,255,255,.045);transition:transform .15s var(--ease-out),background .2s}
+[data-theme="light"] .heat-cell{background:rgba(9,12,18,.05)}
+.heat-cell:hover{transform:scale(1.4);z-index:2}
+.heat-key{display:flex;align-items:center;gap:5px;padding:0 15px 12px;font-size:10px;color:var(--text-3)}
+.heat-key i{width:9px;height:9px;border-radius:2px;display:block}
+
+/* latency sparkline + connections */
+.lat-wrap{position:relative;padding:4px 12px 10px}
+canvas#latency{display:block;width:100%;height:132px}
+.conn-list{padding:4px 8px 10px;max-height:300px;overflow-y:auto}
+.conn-row{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:7px;transition:background .15s;font-size:11px}
+.conn-row:hover{background:rgba(255,255,255,.025)}
+.conn-row .proc{font-weight:600;font-size:11px;flex:0 0 92px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conn-row .addr{color:var(--text-3);font-family:"JetBrains Mono",monospace;font-size:10.5px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini-btn{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:6px;border:1px solid var(--line-1);background:rgba(255,255,255,.02);color:var(--text-3);font-family:inherit;font-size:10px;font-weight:600;cursor:pointer;transition:all .18s var(--ease-out)}
+.mini-btn:hover{border-color:var(--line-2);color:var(--text-1);background:rgba(255,255,255,.05)}
+.mini-btn:active{transform:scale(.95)}
+.mini-btn:disabled{opacity:.4;cursor:wait}
+
+@keyframes pulse-ring{0%{transform:scale(.85);opacity:.7}70%{transform:scale(2.1);opacity:0}100%{transform:scale(2.1);opacity:0}}@keyframes breathe{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes riseIn{from{opacity:0;transform:translateY(12px) scale(.995)}to{opacity:1;transform:none}}
+.rise{animation:riseIn .55s var(--ease-out) both}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div id="app">
+  <aside class="rail glass" id="rail">
+    <div class="brand">
+      <div class="mark"><svg viewBox="0 0 24 24"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg></div>
+      <span class="wordmark">vantage</span>
+    </div>
+    <nav class="rail-nav">
+      <div class="nav-item active" data-nav>
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        <span class="label">Overview</span>
+      </div>
+      <div class="nav-item" data-nav>
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/></svg>
+        <span class="label">This PC</span>
+      </div>
+      <div class="nav-item" data-nav>
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/><path d="M12 7.5v4M12 11.5 6.2 16.8M12 11.5l5.8 5.3"/></svg>
+        <span class="label">Network</span>
+      </div>
+      <div class="nav-item" data-nav>
+        <svg viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+        <span class="label">Alerts</span>
+      </div>
+    </nav>
+    <div class="rail-footer">
+      <div class="nav-item" id="collapse">
+        <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h16"/></svg>
+        <span class="label">Collapse</span>
+      </div>
+    </div>
+  </aside>
+
+  <div id="main">
+    <header class="topbar glass">
+      <div class="crumbs">Overview</div>
+      <div class="topbar-right">
+        <div class="live-pill" id="livePill">
+          <span class="live-dot"></span>
+          <span class="live-text" id="liveText">LIVE</span>
+        </div>
+        <button class="icon-btn" id="themeBtn" aria-label="Switch light or dark">
+          <svg id="themeIcon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="content grid-bg" id="content">
+      <div class="content-inner">
+        <div id="banner"></div>
+        <section class="hero" id="hero"></section>
+
+        <div class="split">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Traffic on this PC</h3>
+                <p id="chartMeta">waiting for data…</p>
+              </div>
+              <div class="legend">
+                <span><i style="background:#6E7BFF"></i>In</span>
+                <span><i style="background:#9B6EFF"></i>Out</span>
+              </div>
+            </div>
+            <div class="chart-wrap"><canvas id="traffic"></canvas></div>
+          </section>
+
+          <section class="panel events">
+            <div class="panel-head">
+              <div><h3>Alerts</h3></div>
+              <p id="eventCount" style="font-size:10.5px;color:var(--text-3)"></p>
+            </div>
+            <div class="list" id="events"></div>
+          </section>
+        </div>
+
+        <section class="conn" id="connection"></section>
+
+        <div class="split">
+          <section class="panel">
+            <div class="panel-head">
+              <div><h3>Latency</h3><p id="latMeta">ping every 5 seconds</p></div>
+              <div class="legend">
+                <span><i style="background:#34D399"></i>Internet</span>
+                <span><i style="background:#FBBF24"></i>Router</span>
+              </div>
+            </div>
+            <div class="lat-wrap"><canvas id="latency"></canvas></div>
+          </section>
+
+          <section class="panel events">
+            <div class="panel-head">
+              <div><h3>Speed test</h3><p id="speedMeta">run it to measure your ISP</p></div>
+            </div>
+            <div style="padding:6px 15px 14px" id="speedBody"></div>
+          </section>
+        </div>
+
+        <div class="section">
+          <h2>Traffic calendar</h2>
+          <span class="hint">last 14 days · darker means busier</span>
+        </div>
+        <section class="panel">
+          <div class="heat-grid" id="heatGrid"></div>
+          <div class="heat-key" id="heatKey"></div>
+        </section>
+
+        <div class="section">
+          <h2>Live connections</h2>
+          <span class="hint" id="connHint">what this PC is talking to right now</span>
+        </div>
+        <section class="panel">
+          <div class="conn-list" id="connList"></div>
+        </section>
+
+        <div class="section">
+          <h2>Network map</h2>
+          <span class="hint">everything your PC can see right now</span>
+        </div>
+        <section class="panel">
+          <div class="map-wrap"><canvas id="map"></canvas></div>
+          <div class="map-legend">
+            <span><i class="dot" style="color:var(--up)"></i>answering</span>
+            <span><i class="dot" style="color:var(--crit)"></i>not answering</span>
+            <span><i class="dot" style="color:var(--accent)"></i>this PC</span>
+            <span class="spacer">hover a device to see its name</span>
+          </div>
+        </section>
+
+        <div class="section">
+          <h2>Devices on your network</h2>
+          <span class="hint" id="deviceHint"></span>
+        </div>
+        <section class="devices-grid" id="devices"></section>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   STATE
+   ═══════════════════════════════════════════════════════════════ */
+const S = {
+  theme: 'dark',
+  data: null,
+  error: null,
+  lastSeries: [],
+  hover: { x: null },
+  mapHover: null,
+};
+
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const el = (t, c, h) => { const n = document.createElement(t); if (c) n.className = c; if (h != null) n.innerHTML = h; return n; };
+
+const UNITS = ['bps','Kbps','Mbps','Gbps','Tbps'];
+function bpsParts(v){
+  if (v == null || !isFinite(v)) return { value:'—', unit:'' };
+  let i = 0, n = Math.abs(v);
+  while (n >= 1000 && i < UNITS.length - 1){ n /= 1000; i++; }
+  const d = n >= 100 ? 0 : n >= 10 ? 1 : 2;
+  return { value: n.toFixed(d), unit: UNITS[i] };
+}
+function speedText(v){
+  if (!v) return '—';
+  if (v >= 1e9) return (v / 1e9).toFixed(v % 1e9 === 0 ? 0 : 1) + ' Gbps';
+  if (v >= 1e6) return (v / 1e6).toFixed(0) + ' Mbps';
+  return (v / 1e3).toFixed(0) + ' Kbps';
+}
+function ago(ts){
+  const d = Date.now() - ts;
+  if (d < 5000) return 'just now';
+  if (d < 60000) return Math.floor(d/1000) + 's ago';
+  if (d < 3600000) return Math.floor(d/60000) + 'm ago';
+  return Math.floor(d/3600000) + 'h ago';
+}
+function hexA(c, a){
+  c = (c || '').trim();
+  if (c.startsWith('#')){
+    const n = c.length === 4 ? c.slice(1).split('').map(x => x + x).join('') : c.slice(1);
+    return `rgba(${parseInt(n.slice(0,2),16)},${parseInt(n.slice(2,4),16)},${parseInt(n.slice(4,6),16)},${a})`;
+  }
+  return `rgba(110,123,255,${a})`;
+}
+function cssVar(name){
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+function statusDot(state, size = 8, pulse = false){
+  const c = state === 'up' ? 'var(--up)' : state === 'down' ? 'var(--crit)' : 'var(--unknown)';
+  return `<span class="status" style="width:${size}px;height:${size}px;color:${c}">
+    <span class="ring"></span>
+    ${state !== 'unknown' ? `<span class="core" style="width:${size*.42}px;height:${size*.42}px"></span>` : ''}
+    ${pulse ? '<span class="pulse"></span>' : ''}
+  </span>`;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DATA
+   ═══════════════════════════════════════════════════════════════ */
+async function fetchSnapshot(){
+  try {
+    const res = await fetch('/api/v1/snapshot', { cache: 'no-store' });
+    if (!res.ok) throw new Error('agent said ' + res.status);
+    const data = await res.json();
+    S.data = data;
+    S.error = data.error || null;
+    setLive(true);
+    render();
+  } catch (err) {
+    S.error = String(err.message || err);
+    setLive(false);
+    renderBanner();
+  }
+}
+
+function setLive(on){
+  const pill = $('#livePill');
+  const text = $('#liveText');
+  pill.classList.toggle('off', !on);
+  pill.classList.remove('demo');
+  text.textContent = on ? 'LIVE' : 'NO AGENT';
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BANNER
+   ═══════════════════════════════════════════════════════════════ */
+function renderBanner(){
+  const host = $('#banner');
+  if (!S.error) { host.innerHTML = ''; return; }
+  const noAgent = !S.data;
+  host.innerHTML = `<div class="banner ${noAgent ? '' : 'err'}">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 3l9 16H3l9-16z"/><path d="M12 9v4M12 16h.01"/>
+    </svg>
+    <span>${noAgent
+      ? 'The agent is not running. Open a terminal in the <b>vantage</b> folder and run <code>node agent.mjs</code>, then refresh.'
+      : 'Last read failed: ' + S.error}</span>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HERO
+   ═══════════════════════════════════════════════════════════════ */
+function renderHero(){
+  const host = $('#hero');
+  const d = S.data;
+  const prev = host.dataset.once === '1';
+
+  if (!d){
+    host.innerHTML = '';
+    ['Data in','Data out','WiFi signal','Problems'].forEach((label, i) => {
+      const card = el('div', 'panel stat rise');
+      card.style.animationDelay = (i * 55) + 'ms';
+      card.innerHTML = `
+        <div class="stat-head"><div class="stat-label"><span>${label}</span></div></div>
+        <div class="stat-body"><div><span class="stat-value">—</span></div></div>
+        <div class="stat-foot">no data</div>`;
+      host.appendChild(card);
+    });
+    return;
+  }
+
+  const series = d.series || [];
+  const tail = series.slice(-40);
+  const wifi = d.wifi || {};
+  const wants = [
+    {
+      label: 'Data in',
+      colour: 'var(--accent)',
+      icon: '<path d="M7 7l10 10M17 7v10H7"/>',
+      value: bpsParts(d.totals.inBps).value,
+      unit: bpsParts(d.totals.inBps).unit,
+      foot: (d.links || []).filter(l => l.up).length + ' links up',
+      spark: tail.map(s => s.in),
+    },
+    {
+      label: 'Data out',
+      colour: 'var(--violet)',
+      icon: '<path d="M17 17 7 7M7 17V7h10"/>',
+      value: bpsParts(d.totals.outBps).value,
+      unit: bpsParts(d.totals.outBps).unit,
+      foot: (d.devices || []).length + ' devices seen',
+      spark: tail.map(s => s.out),
+    },
+  ];
+
+  host.innerHTML = '';
+
+  wants.forEach((w, i) => {
+    const card = el('div', 'panel hoverable stat rise');
+    card.style.animationDelay = (i * 55) + 'ms';
+    card.innerHTML = `
+      <div class="stat-head">
+        <div class="stat-label" style="color:${w.colour}">
+          <svg viewBox="0 0 24 24">${w.icon}</svg><span>${w.label}</span>
+        </div>
+      </div>
+      <div class="stat-body">
+        <div><span class="stat-value num">${w.value}</span><span class="stat-unit">${w.unit}</span></div>
+        <canvas class="spark" data-spark="${i}" width="136" height="44" style="width:68px;height:22px"></canvas>
+      </div>
+      <div class="stat-foot">${w.foot}</div>`;
+    host.appendChild(card);
+    drawSpark($(`[data-spark="${i}"]`, card), w.spark, w.colour === 'var(--accent)' ? '#6E7BFF' : '#9B6EFF');
+  });
+
+  /* WiFi card */
+  const sig = wifi.connected ? wifi.signal : null;
+  const sigColour = sig == null ? 'var(--unknown)' : sig < 45 ? 'var(--crit)' : sig < 65 ? 'var(--warn)' : 'var(--up)';
+  const wifiCard = el('div', 'panel hoverable stat rise');
+  wifiCard.style.animationDelay = '110ms';
+  wifiCard.innerHTML = `
+    <div class="stat-head">
+      <div class="stat-label" style="color:var(--up)">
+        <svg viewBox="0 0 24 24"><path d="M5 12.5a10 10 0 0 1 14 0M8.5 16a5.5 5.5 0 0 1 7 0"/><circle cx="12" cy="19.5" r="1.2"/></svg>
+        <span>WiFi signal</span>
+      </div>
+      <span class="stat-badge" style="color:${sigColour};background:${sigColour === 'var(--up)' ? 'rgba(52,211,153,.09)' : sigColour === 'var(--warn)' ? 'rgba(251,191,36,.09)' : 'rgba(251,113,133,.09)'}">
+        ${wifi.connected ? (sig >= 65 ? 'good' : sig >= 45 ? 'fair' : 'weak') : 'off'}
+      </span>
+    </div>
+    <div class="stat-body">
+      <div><span class="stat-value num">${sig == null ? '—' : sig}</span><span class="stat-unit">%</span></div>
+    </div>
+    <div class="signal-bar ${sig == null ? '' : sig < 45 ? 'bad' : sig < 65 ? 'weak' : ''}">
+      ${[0,1,2,3,4,5,6,7,8,9].map(i => `<i class="${sig != null && i < Math.round(sig/10) ? 'on' : ''}"></i>`).join('')}
+    </div>
+  `;
+  host.appendChild(wifiCard);
+
+  /* Problems card */
+  const problems = (d.events || []).filter(e => e.severity >= 1).length;
+  const pCard = el('div', 'panel hoverable stat rise');
+  pCard.style.animationDelay = '165ms';
+  pCard.innerHTML = `
+    <div class="stat-head">
+      <div class="stat-label" style="color:${problems ? 'var(--crit)' : 'var(--up)'}">
+        <svg viewBox="0 0 24 24"><path d="M12 3l9 16H3l9-16z"/><path d="M12 9v4M12 16h.01"/></svg>
+        <span>Problems</span>
+      </div>
+      <span class="stat-badge" style="color:${problems ? 'var(--crit)' : 'var(--up)'};background:${problems ? 'rgba(251,113,133,.10)' : 'rgba(52,211,153,.09)'}">
+        ${problems ? 'check' : 'clear'}
+      </span>
+    </div>
+    <div class="stat-body">
+      <div><span class="stat-value num">${problems}</span><span class="stat-unit">${problems === 1 ? 'thing' : 'things'}</span></div>
+    </div>
+    <div class="stat-foot">${problems ? 'look at the list on the right' : 'everything looks fine'}</div>
+  `;
+  host.appendChild(pCard);
+
+  host.dataset.once = '1';
+}
+
+function drawSpark(canvas, data, colour){
+  if (!canvas || !data || data.length < 2) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = 68, H = 22;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+
+  const max = Math.max(...data, 1);
+  const step = W / (data.length - 1);
+  const pts = data.map((v, i) => [i * step, H - (v / max) * (H - 2) - 1]);
+
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, hexA(colour, .28));
+  g.addColorStop(1, hexA(colour, 0));
+
+  ctx.beginPath();
+  ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+  ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+  ctx.fillStyle = g; ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+  ctx.strokeStyle = colour; ctx.lineWidth = 1.25;
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  ctx.stroke();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TRAFFIC CHART
+   ═══════════════════════════════════════════════════════════════ */
+const traffic = $('#traffic');
+const tctx = traffic.getContext('2d');
+
+function fitCanvas(canvas){
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const r = canvas.getBoundingClientRect();
+  canvas.width = Math.floor(r.width * dpr);
+  canvas.height = Math.floor(r.height * dpr);
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { w: r.width, h: r.height, ctx };
+}
+function roundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function drawTraffic(){
+  const { w, h, ctx } = fitCanvas(traffic);
+  ctx.clearRect(0, 0, w, h);
+
+  const series = (S.data && S.data.series) || [];
+  if (series.length < 2){
+    ctx.fillStyle = cssVar('--text-3');
+    ctx.font = '12px Inter, system-ui, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('Waiting for a second sample…', w / 2, h / 2);
+    return;
+  }
+
+  const padL = 58, padR = 10, padT = 10, padB = 22;
+  const cw = w - padL - padR, ch = h - padT - padB;
+  const peak = Math.max(...series.map(s => Math.max(s.in, s.out)), 1000) * 1.15;
+
+  ctx.strokeStyle = cssVar('--line-1') || 'rgba(255,255,255,.055)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++){
+    const y = padT + (ch / 4) * i;
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke();
+  }
+
+  ctx.fillStyle = cssVar('--text-3');
+  ctx.font = '10.5px Inter, system-ui, sans-serif';
+  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  for (let i = 0; i <= 4; i++){
+    const y = padT + (ch / 4) * i;
+    const v = peak - (peak / 4) * i;
+    const p = bpsParts(v);
+    ctx.fillText(p.value + ' ' + p.unit, padL - 8, y);
+  }
+
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  const span = series.length > 1 ? series[series.length - 1].t - series[0].t : 0;
+  for (let i = 0; i < 6; i++){
+    const x = padL + (cw / 5) * i;
+    const at = series[0].t + (span / 5) * i;
+    ctx.fillText(new Date(at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), x, h - padB + 7);
+  }
+
+  const xAt = i => padL + (i / (series.length - 1)) * cw;
+  const yAt = v => padT + ch - (v / peak) * ch;
+
+  [['out', '#9B6EFF', .30], ['in', '#6E7BFF', .34]].forEach(([key, colour, alpha]) => {
+    const pts = series.map((s, i) => [xAt(i), yAt(s[key])]);
+
+    const g = ctx.createLinearGradient(0, padT, 0, padT + ch);
+    g.addColorStop(0, hexA(colour, alpha));
+    g.addColorStop(1, hexA(colour, 0));
+
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.lineTo(pts[pts.length - 1][0], padT + ch);
+    ctx.lineTo(pts[0][0], padT + ch);
+    ctx.closePath();
+    ctx.fillStyle = g; ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.strokeStyle = colour; ctx.lineWidth = 1.75;
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.stroke();
+
+    const last = pts[pts.length - 1];
+    const halo = ctx.createRadialGradient(last[0], last[1], 0, last[0], last[1], 9);
+    halo.addColorStop(0, hexA(colour, .45));
+    halo.addColorStop(1, hexA(colour, 0));
+    ctx.fillStyle = halo;
+    ctx.beginPath(); ctx.arc(last[0], last[1], 9, 0, Math.PI * 2); ctx.fill();
+
+    ctx.beginPath(); ctx.arc(last[0], last[1], 2.4, 0, Math.PI * 2);
+    ctx.fillStyle = colour; ctx.fill();
+  });
+
+  if (S.hover.x != null){
+    const i = Math.round(((S.hover.x - padL) / cw) * (series.length - 1));
+    if (i >= 0 && i < series.length){
+      const x = xAt(i);
+      ctx.strokeStyle = 'rgba(255,255,255,.18)';
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, padT + ch); ctx.stroke();
+      ctx.setLineDash([]);
+
+      [['in', '#6E7BFF'], ['out', '#9B6EFF']].forEach(([k, c]) => {
+        const y = yAt(series[i][k]);
+        ctx.beginPath(); ctx.arc(x, y, 3.2, 0, Math.PI * 2);
+        ctx.fillStyle = c; ctx.fill();
+        ctx.strokeStyle = cssVar('--bg-1'); ctx.lineWidth = 1.6; ctx.stroke();
+      });
+
+      const pin = bpsParts(series[i].in), pout = bpsParts(series[i].out);
+      const label = `in ${pin.value} ${pin.unit}   ·   out ${pout.value} ${pout.unit}`;
+      ctx.font = '10.5px Inter, system-ui, sans-serif';
+      const tw = ctx.measureText(label).width + 16;
+      let tx = Math.max(padL, Math.min(x - tw / 2, w - padR - tw));
+      const ty = padT + 4;
+
+      ctx.fillStyle = 'rgba(13,15,18,.92)';
+      roundRect(ctx, tx, ty, tw, 22, 6); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,.10)'; ctx.lineWidth = 1;
+      roundRect(ctx, tx, ty, tw, 22, 6); ctx.stroke();
+
+      ctx.fillStyle = '#f0f2f5';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(label, tx + tw / 2, ty + 11);
+    }
+  }
+
+  const p = bpsParts(peak);
+  $('#chartMeta').textContent = `${series.length} samples · ${Math.round(span / 1000)}s window`;
+}
+traffic.addEventListener('mousemove', e => {
+  S.hover.x = e.clientX - traffic.getBoundingClientRect().left;
+  drawTraffic();
+});
+traffic.addEventListener('mouseleave', () => { S.hover.x = null; drawTraffic(); });
+
+/* ═══════════════════════════════════════════════════════════════
+   CONNECTION STRIP
+   ═══════════════════════════════════════════════════════════════ */
+function renderConnection(){
+  const host = $('#connection');
+  const d = S.data;
+  if (!d){ host.innerHTML = ''; return; }
+
+  const wifi = d.wifi || {};
+  const main = (d.links || []).find(l => /wi-?fi/i.test(l.name)) || (d.links || [])[0] || {};
+  const sig = wifi.connected ? wifi.signal : null;
+
+  const cells = [
+    { k: 'Network', v: wifi.connected ? (wifi.ssid || 'connected') : (main.name || '—') },
+    { k: 'Signal', v: sig == null ? '—' : sig + '%' },
+    { k: 'Speed', v: main.speedBps ? speedText(main.speedBps) : '—' },
+    { k: 'Channel', v: wifi.channel || '—' },
+    { k: 'Your address', v: (d.devices || []).find(x => x.self)?.ip || '—', mono: true },
+    { k: 'Adapter', v: main.name || '—' },
+  ];
+
+  host.innerHTML = cells.map(c => `
+    <div class="conn-cell">
+      <div class="k">${c.k}</div>
+      <div class="v ${c.mono ? 'mono' : ''}">${c.v}</div>
+    </div>`).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   EVENTS
+   ═══════════════════════════════════════════════════════════════ */
+function renderEvents(){
+  const host = $('#events');
+  const d = S.data;
+  host.innerHTML = '';
+
+  if (!d){
+    host.innerHTML = `<div class="empty-state"><p>No data yet.</p><small>Start the agent to see alerts.</small></div>`;
+    $('#eventCount').textContent = '';
+    return;
+  }
+
+  const events = (d.events || []).filter(e => !e.acked);
+  $('#eventCount').textContent = events.length + ' open';
+
+  const bad = events.filter(e => e.severity >= 1);
+  if (!bad.length){
+    host.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+      <p>Nothing is wrong.</p>
+      <small>This PC and its network look fine.</small>
+    </div>`;
+    return;
+  }
+
+  bad.slice(0, 12).forEach((e, i) => {
+    const c = e.severity >= 2 ? 'var(--crit)' : 'var(--warn)';
+    const node = el('div', 'event');
+    node.style.animation = `fadeUp .4s var(--ease-out) ${i * 35}ms both`;
+    node.innerHTML = `
+      <svg viewBox="0 0 24 24" style="stroke:${c}"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+      <div class="body">
+        <div class="msg">${e.message}</div>
+        <div class="meta"><span class="kind">${e.kind}</span><span>·</span><span>${ago(e.at)}</span></div>
+      </div>
+      <button class="ack">ok</button>`;
+    $('.ack', node).addEventListener('click', async ev => {
+      ev.stopPropagation();
+      await fetch('/api/v1/ack', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: e.id }),
+      });
+      fetchSnapshot();
+    });
+    host.appendChild(node);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   NETWORK MAP
+   ═══════════════════════════════════════════════════════════════ */
+function drawMap(now){
+  const canvas = $('#map');
+  const { w, h, ctx } = fitCanvas(canvas);
+  ctx.clearRect(0, 0, w, h);
+
+  const d = S.data;
+  const devices = (d && d.devices) || [];
+  if (!devices.length){
+    ctx.fillStyle = cssVar('--text-3');
+    ctx.font = '12px Inter, system-ui, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('No devices found yet.', w / 2, h / 2);
+    return;
+  }
+
+  const cx = w / 2, cy = h / 2;
+  const radius = Math.min(w, h) * 0.34;
+
+  const nodes = devices.slice(0, 28).map((dev, i) => {
+    const angle = (i / Math.min(devices.length, 28)) * Math.PI * 2 - Math.PI / 2;
+    const jitter = 0.86 + ((i * 37) % 13) / 40;
+    return {
+      ...dev,
+      x: cx + Math.cos(angle) * radius * jitter,
+      y: cy + Math.sin(angle) * radius * jitter,
+      r: dev.self ? 22 : 13,
+    };
+  });
+
+  const self = nodes.find(n => n.self);
+
+  /* links to this PC */
+  if (self){
+    nodes.forEach(n => {
+      if (n === self) return;
+      ctx.beginPath();
+      ctx.moveTo(self.x, self.y);
+      ctx.lineTo(n.x, n.y);
+      ctx.strokeStyle = n.online ? 'rgba(255,255,255,.09)' : 'rgba(251,113,133,.18)';
+      ctx.lineWidth = 1;
+      if (!n.online) ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      if (n.online){
+        const t = now / 1000;
+        for (let k = 0; k < 2; k++){
+          const p = (t * 0.22 + k / 2 + (n.x % 7) / 7) % 1;
+          const px = self.x + (n.x - self.x) * p;
+          const py = self.y + (n.y - self.y) * p;
+          const alpha = Math.sin(p * Math.PI) * 0.7;
+          ctx.beginPath(); ctx.arc(px, py, 1.6, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(110,123,255,${alpha.toFixed(3)})`;
+          ctx.fill();
+        }
+      }
+    });
+  }
+
+  /* nodes */
+  nodes.forEach(n => {
+    const c = n.self ? '#6E7BFF' : n.online ? '#34D399' : '#FB7185';
+    const focused = S.mapHover === n.ip;
+
+    const halo = ctx.createRadialGradient(n.x, n.y, n.r * .4, n.x, n.y, n.r * 2.6);
+    halo.addColorStop(0, hexA(c, focused ? .22 : .10));
+    halo.addColorStop(1, hexA(c, 0));
+    ctx.beginPath(); ctx.arc(n.x, n.y, n.r * 2.6, 0, Math.PI * 2);
+    ctx.fillStyle = halo; ctx.fill();
+
+    ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+    ctx.fillStyle = cssVar('--bg-1');
+    ctx.fill();
+    ctx.strokeStyle = c;
+    ctx.lineWidth = focused ? 2.4 : 1.4;
+    ctx.stroke();
+
+    if (n.self){
+      ctx.beginPath(); ctx.arc(n.x, n.y, 4, 0, Math.PI * 2);
+      ctx.fillStyle = c; ctx.fill();
+    }
+
+    if (!n.online){
+      const t = (now % 2400) / 2400;
+      ctx.beginPath(); ctx.arc(n.x, n.y, n.r * (1 + t * 1.3), 0, Math.PI * 2);
+      ctx.strokeStyle = hexA(c, .5 * (1 - t));
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    ctx.font = focused ? '600 10.5px Inter, system-ui, sans-serif' : '500 9.5px Inter, system-ui, sans-serif';
+    ctx.fillStyle = focused ? cssVar('--text-1') : cssVar('--text-2');
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    const label = n.self ? 'this PC' : (n.name || n.ip);
+    ctx.fillText(label.length > 20 ? label.slice(0, 19) + '…' : label, n.x, n.y + n.r + 7);
+  });
+
+  canvas._nodes = nodes;
+}
+$('#map').addEventListener('mousemove', e => {
+  const canvas = $('#map');
+  const r = canvas.getBoundingClientRect();
+  const x = e.clientX - r.left, y = e.clientY - r.top;
+  const hit = (canvas._nodes || []).find(n => Math.hypot(n.x - x, n.y - y) <= n.r + 6);
+  S.mapHover = hit ? hit.ip : null;
+  canvas.style.cursor = hit ? 'pointer' : 'default';
+});
+$('#map').addEventListener('mouseleave', () => { S.mapHover = null; });
+
+/* ═══════════════════════════════════════════════════════════════
+   DEVICES
+   ═══════════════════════════════════════════════════════════════ */
+function renderDevices(){
+  const host = $('#devices');
+  const d = S.data;
+  host.innerHTML = '';
+
+  if (!d){
+    $('#deviceHint').textContent = '';
+    host.innerHTML = `<div class="panel" style="padding:20px;color:var(--text-3);font-size:12px">
+      Start the agent to discover devices on your network.</div>`;
+    return;
+  }
+
+  const list = (d.devices || []).slice().sort((a, b) => {
+    if (a.self) return -1;
+    if (b.self) return 1;
+    if (a.online !== b.online) return a.online ? -1 : 1;
+    return a.ip.localeCompare(b.ip, undefined, { numeric: true });
+  });
+
+  $('#deviceHint').textContent = `${list.filter(x => x.online).length} of ${list.length} answering`;
+
+  if (!list.length){
+    host.innerHTML = `<div class="panel" style="padding:20px;color:var(--text-3);font-size:12px">
+      No devices found. Make sure you are on WiFi or Ethernet.</div>`;
+    return;
+  }
+
+  list.forEach((dev, i) => {
+    const card = el('div', 'panel device rise');
+    card.style.animationDelay = Math.min(i * 40, 400) + 'ms';
+    const title = dev.self ? 'This PC' : (dev.name || dev.ip);
+    const sub = dev.self ? dev.ip : dev.ip;
+    card.innerHTML = `
+      <div class="dev-top">
+        <div class="dev-name">
+          ${statusDot(dev.online ? 'up' : 'down', 8, !dev.online)}
+          <h3>${title}</h3>
+        </div>
+      </div>
+      <div class="dev-sub">
+        <span class="ip mono">${sub}</span>
+        ${dev.kind ? `<span class="sep">·</span><span class="vend">${dev.kind}</span>` : (dev.vendor ? `<span class="sep">·</span><span class="vend">${dev.vendor}</span>` : '')}
+      </div>
+      <div class="dev-foot" data-mac="${dev.mac}" data-online="${dev.online ? '1' : '0'}">
+        <span class="mono">${dev.mac}</span>
+        <span class="right">${dev.online ? (dev.rttMs != null ? Math.round(dev.rttMs) + ' ms' : 'up') : 'no reply'}</span>
+      </div>`;
+    host.appendChild(card);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HISTORY
+   ═══════════════════════════════════════════════════════════════ */
+let HISTORY = { hourly: [], latency: [], speed: [] };
+
+async function fetchHistory(){
+  try {
+    const res = await fetch('/api/v1/history', { cache: 'no-store' });
+    HISTORY = await res.json();
+    renderHeatmap();
+    renderSpeed();
+    drawLatency();
+  } catch {}
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RENDER
+   ═══════════════════════════════════════════════════════════════ */
+function render(){
+  renderBanner();
+  renderHero();
+  renderConnection();
+  renderEvents();
+  renderDevices();
+  drawTraffic();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   UI WIRING
+   ═══════════════════════════════════════════════════════════════ */
+$('#collapse').addEventListener('click', () => $('#rail').classList.toggle('collapsed'));
+
+$('#themeBtn').addEventListener('click', () => {
+  S.theme = S.theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = S.theme;
+  $('#themeIcon').innerHTML = S.theme === 'dark'
+    ? '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'
+    : '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>';
+  drawTraffic();
+});
+
+$$('.nav-item[data-nav]').forEach(item => {
+  item.addEventListener('click', () => {
+    $$('.nav-item[data-nav]').forEach(x => x.classList.remove('active'));
+    item.classList.add('active');
+    const label = $('.label', item).textContent;
+    $('.crumbs').textContent = label;
+    const target = {
+      'Overview': 0,
+      'This PC': $('#connection').offsetTop - 100,
+      'Network': $('#map').offsetTop - 100,
+      'Alerts': 0,
+    }[label] || 0;
+    $('#content').scrollTo({ top: target, behavior: 'smooth' });
+  });
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   BOOT
+   ═══════════════════════════════════════════════════════════════ */
+renderBanner();
+fetchSnapshot();
+setInterval(fetchSnapshot, 2000);
+
+/* map animation loop — stops when the tab is hidden */
+function loop(now){
+  if (!document.hidden) drawMap(now);
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+window.addEventListener('resize', () => { drawTraffic(); });
+</script>
+<script src="extras.js"></script>
+</body>
+</html>
