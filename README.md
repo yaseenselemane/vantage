@@ -6,6 +6,8 @@ Reads real interface counters, discovers every device on the LAN, tracks latency
 
 ![overview](docs/overview.png)
 
+*Screenshot uses sample data. No real device names, IPs or MACs.*
+
 ---
 
 ## Why this exists
@@ -29,6 +31,7 @@ The third one required reverse-engineering a locked vendor router API. That is t
 | LAN devices | IP, MAC, vendor (OUI), reachability, RTT | ARP + broadcast sweep + ICMP |
 | Live connections | Remote host, port, owning process | `Get-NetTCPConnection` |
 | Router (whole house) | Total data used today and this month, signal, radio | Reverse-engineered ubus API |
+| Router (every device) | Live upload/download per device, name, which mesh node and band, WiFi signal (dBm) | `net.info`, `web_api.get_routers`, `get_topology` over ubus |
 | History | 30 days of samples, latency, speed tests | SQLite, zero dependencies |
 | Alerts | Offline devices, weak WiFi, hot links | Toast + rules in `config.json` |
 

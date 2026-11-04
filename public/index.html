@@ -257,9 +257,10 @@ svg.dspark{display:block;width:80px;height:20px}
 
 /* heatmap */
 .heat-grid{display:grid;grid-template-columns:32px repeat(24,1fr);gap:3px;padding:0 15px 8px}
-.heat-hour{font-size:8px;color:var(--text-3);text-align:center;font-variant-numeric:tabular-nums}
+/* one label every 3 hours, so each spans 3 of the 24 hour columns */
+.heat-hour{grid-column:span 3;font-size:9px;color:var(--text-3);font-variant-numeric:tabular-nums}
 .heat-day{font-size:9px;color:var(--text-3);display:flex;align-items:center}
-.heat-cell{aspect-ratio:1;border-radius:3px;background:rgba(255,255,255,.045);transition:transform .15s var(--ease-out),background .2s}
+.heat-cell{height:14px;border-radius:3px;background:rgba(255,255,255,.045);transition:transform .15s var(--ease-out),background .2s}
 [data-theme="light"] .heat-cell{background:rgba(9,12,18,.05)}
 .heat-cell:hover{transform:scale(1.4);z-index:2}
 .heat-key{display:flex;align-items:center;gap:5px;padding:0 15px 12px;font-size:10px;color:var(--text-3)}
