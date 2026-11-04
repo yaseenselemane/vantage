@@ -14,7 +14,8 @@ if (-not (Test-Path $cfg)) {
   $sec = Read-Host "Router admin password (Enter to skip)" -AsSecureString
   $pass = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($sec))
   if ($pass) {
-    @{ router = @{ user = "admin"; pass = $pass } } | ConvertTo-Json | Set-Content -Path $cfg -Encoding UTF8
+    # WriteAllText = UTF-8 without BOM; Set-Content -Encoding UTF8 adds one.
+    [IO.File]::WriteAllText($cfg, (@{ router = @{ user = "admin"; pass = $pass } } | ConvertTo-Json))
     Write-Host "Saved router login to config.local.json"
   }
 }

@@ -703,7 +703,8 @@ setInterval(async () => {
 // Env vars win; otherwise config.local.json (gitignored), so a login-time start
 // has the password without anyone typing it.
 let local = {};
-try { local = JSON.parse(await readFile(path.join(HERE, "config.local.json"), "utf8")); } catch {}
+// Strip the BOM that Windows PowerShell and Notepad put on "UTF-8" files.
+try { local = JSON.parse((await readFile(path.join(HERE, "config.local.json"), "utf8")).replace(/^﻿/, "")); } catch {}
 const ROUTER_USER = process.env.VANTAGE_ROUTER_USER || local.router?.user || "admin";
 const ROUTER_PASS = process.env.VANTAGE_ROUTER_PASS || local.router?.pass || "";
 let routerReady = false;
