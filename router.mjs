@@ -111,15 +111,47 @@ const rate = (v) => {
 };
 
 /**
- * Every device the router has online, with its live upload/download rate.
+ * The mesh and every device the router has online.
  * get_ip_list gives names; get_mac_rate gives rates the router already
  * computed. hnat (hardware offload) and snat (software NAT) are separate
  * paths, so a device's total is the sum of both, v4 and v6.
+ * get_routers says which mesh node each WiFi client is on; get_topology
+ * holds each station's signal.
  */
 export async function clients() {
-  const list = await ubus("net.info", "get_ip_list");
+  const [list, routers, topo] = await Promise.all([
+    ubus("net.info", "get_ip_list"),
+    ubus("web_api", "get_routers").catch(() => null),
+    ubus("web_api", "get_topology").catch(() => null),
+  ]);
+
+  const nodes = routers?.data?.dev_list || [];
+  const aps = nodes.map((n) => ({
+    name: n.name || n.ip,
+    ip: n.ip,
+    root: n.map_role === 1,
+    backhaul: n.bh_medium && n.bh_medium !== "none" ? n.bh_medium : null,
+  }));
+  const via = new Map();
+  for (const n of nodes) {
+    for (const c of n.clients || []) {
+      via.set(String(c.addr).toUpperCase(), { via: n.name || n.ip, band: c.medium || null });
+    }
+  }
+
+  // Station signal sits a few levels deep in the EasyMesh dump; walk it.
+  const rssi = new Map();
+  (function walk(o) {
+    if (Array.isArray(o)) return o.forEach(walk);
+    if (!o || typeof o !== "object") return;
+    const mac = o["STA MAC address"];
+    const v = Number(o["uplink rssi"]);
+    if (mac && v > -100 && v < 0) rssi.set(String(mac).toUpperCase(), v); // -200 means "no reading"
+    Object.values(o).forEach(walk);
+  })(topo?.data);
+
   const online = Object.values(list?.Online || {}).flat();
-  return Promise.all(online.map(async (c) => {
+  const devices = await Promise.all(online.map(async (c) => {
     const r = await ubus("net.info", "get_mac_rate", { object: c.MAC, detail: true }).catch(() => null);
     let upBps = 0, downBps = 0;
     for (const path of ["hnat", "snat"]) {
@@ -128,14 +160,19 @@ export async function clients() {
         downBps += rate(r?.[path]?.[v]?.download);
       }
     }
+    const mac = String(c.MAC).toUpperCase();
     return {
-      mac: String(c.MAC).toUpperCase(),
+      mac,
       ip: c.IP,
       name: c.NAME || null,
       upBps: r ? upBps : null,
       downBps: r ? downBps : null,
+      via: via.get(mac)?.via ?? null,
+      band: via.get(mac)?.band ?? null,
+      rssi: rssi.get(mac) ?? null,
     };
   }));
+  return { aps, devices };
 }
 
 export const _rate = rate; // for the self-check

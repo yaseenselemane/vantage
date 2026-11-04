@@ -18,7 +18,7 @@ import * as router from "./router.mjs";
 const exec = promisify(execFile);
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 8123);
-const OPEN = process.env.VANTAGE_NO_BROWSER !== "1";
+const OPEN = process.env.VANTAGE_NO_BROWSER !== "1" && !process.argv.includes("--no-browser");
 
 /* ═══════════════════════════════════════════════════════════════
    COLLECT
@@ -226,7 +226,9 @@ async function reverseName(ip) {
 const state = {
   prev: new Map(),          // adapter name -> { rx, tx, at }
   pingCache: new Map(),     // ip -> { online, rttMs, name }
-  clients: new Map(),       // mac -> router's view { ip, name, upBps, downBps }
+  clients: new Map(),       // mac -> router's view { ip, name, upBps, downBps, via, band, rssi }
+  aps: [],                  // mesh nodes { name, ip, root, backhaul }
+  latency: {},              // { internet, router } last ping in ms
   lastProbeAt: 0,
   links: [],
   wifi: { connected: false },
@@ -250,9 +252,13 @@ function pushEvent(severity, kind, message) {
   if (severity >= 2) toast("vantage", message);
 }
 
+// WSL, Hyper-V and VM adapters are networks inside this PC, not the LAN.
+const VIRTUAL = /vEthernet|VirtualBox|VMware|Hyper-V|WSL|Loopback|Bluetooth/i;
+
 function localInterfaces() {
-  return Object.values(os.networkInterfaces())
-    .flat()
+  return Object.entries(os.networkInterfaces())
+    .filter(([name]) => !VIRTUAL.test(name))
+    .flatMap(([, list]) => list)
     .filter((i) => i && i.family === "IPv4" && !i.internal);
 }
 
@@ -378,6 +384,7 @@ async function collect() {
   for (const n of neighbours) {
     if (!n.ip || !isHostAddress(n.ip)) continue;
     if (!isRealMac(n.mac)) continue;
+    if (VIRTUAL.test(n.adapter || "")) continue;
     if (seen.has(n.ip)) continue;
     seen.set(n.ip, {
       ip: n.ip,
@@ -441,10 +448,21 @@ async function collect() {
 
   // The router sees every device's traffic; this PC only sees its own. A phone
   // that ignores ping is still online if the router says so.
+  const apIps = new Set(state.aps.map((a) => a.ip));
   state.devices = probed.map((d) => {
     const c = state.clients.get(d.mac);
-    if (!c) return d;
-    return { ...d, online: true, name: c.name || d.name, upBps: c.upBps, downBps: c.downBps };
+    const base = apIps.has(d.ip) ? { ...d, isAp: true } : d;
+    if (!c) return base;
+    return {
+      ...base,
+      online: true,
+      name: c.name || d.name,
+      upBps: c.upBps,
+      downBps: c.downBps,
+      via: c.via,
+      band: c.band,
+      rssi: c.rssi,
+    };
   });
 
   /* ---- the system's own total ---- */
@@ -505,6 +523,15 @@ function snapshot() {
     totals: { inBps: totalIn, outBps: totalOut },
     wan: state.wan || null,
     router: state.router || null,
+    aps: state.aps,
+    latency: state.latency,
+    // Whole-house rate is only known when the router is giving per-device rates.
+    house: state.clients.size
+      ? [...state.clients.values()].reduce(
+          (a, c) => ({ downBps: a.downBps + (c.downBps || 0), upBps: a.upBps + (c.upBps || 0) }),
+          { downBps: 0, upBps: 0 },
+        )
+      : null,
     devices: state.devices,
     events: state.events.filter((e) => !e.acked).slice(0, 30),
     series: state.series,
@@ -662,17 +689,23 @@ setInterval(async () => {
   for (const target of latencyTargets) {
     const r = await pingOnce(target, 1500);
     store.saveLatency(Date.now(), target, r.ms);
+    if (target === latencyTargets[0]) state.latency.internet = r.ms;
   }
   const router = state.devices.find((d) => /\.1$/.test(d.ip) && !d.self);
   if (router) {
     const r = await pingOnce(router.ip, 1200);
     store.saveLatency(Date.now(), "router", r.ms);
+    state.latency.router = r.ms;
   }
 }, 5000);
 
 /* whole-house data usage, straight from the router */
-const ROUTER_USER = process.env.VANTAGE_ROUTER_USER || "admin";
-const ROUTER_PASS = process.env.VANTAGE_ROUTER_PASS || "";
+// Env vars win; otherwise config.local.json (gitignored), so a login-time start
+// has the password without anyone typing it.
+let local = {};
+try { local = JSON.parse(await readFile(path.join(HERE, "config.local.json"), "utf8")); } catch {}
+const ROUTER_USER = process.env.VANTAGE_ROUTER_USER || local.router?.user || "admin";
+const ROUTER_PASS = process.env.VANTAGE_ROUTER_PASS || local.router?.pass || "";
 let routerReady = false;
 
 setInterval(async () => {
@@ -699,10 +732,12 @@ setInterval(async () => {
 setInterval(async () => {
   if (!routerReady) return;
   try {
-    const list = await router.clients();
-    state.clients = new Map(list.map((c) => [c.mac, c]));
+    const { aps, devices } = await router.clients();
+    state.aps = aps;
+    state.clients = new Map(devices.map((c) => [c.mac, c]));
   } catch {
     routerReady = false;
+    state.aps = [];
     state.clients = new Map(); // stale rates are worse than none
   }
 }, 5000);
@@ -750,6 +785,13 @@ setInterval(async () => {
 setInterval(() => {
   collect().catch((e) => { state.error = String(e.message || e); });
 }, 3000);
+
+// Launched twice (login task + shortcut)? The first one keeps the port; this one leaves.
+server.on("error", (err) => {
+  if (err.code !== "EADDRINUSE") throw err;
+  console.log(`  vantage is already running on ${url}`);
+  process.exit(0);
+});
 
 server.listen(PORT, "127.0.0.1", () => {
   console.log(`  listening on ${url}`);

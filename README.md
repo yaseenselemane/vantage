@@ -76,13 +76,13 @@ node agent.mjs
 
 Open `http://localhost:8123`.
 
-### Run as a background service (Windows)
+### Make it automatic (Windows)
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File install-service.ps1
 ```
 
-Starts at login, restarts if it crashes, runs on battery.
+Run once. It asks for the router password (saved to `config.local.json`, which is gitignored), starts the agent hidden at every login (restarting it if it crashes, on battery too), and adds a **vantage** shortcut to the Desktop and Start menu. The shortcut opens the dashboard and starts the agent first if it isn't running.
 
 ### Configure
 

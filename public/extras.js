@@ -254,44 +254,9 @@ async function renderConnections() {
 
 /* --------------------------------------------------------------- boot */
 
-function hookWakeButtons() {
-  document.querySelectorAll(".device").forEach((card) => {
-    if (card.querySelector(".mini-btn")) return;
-    const foot = card.querySelector(".dev-foot");
-    if (!foot) return;
-    const mac = foot.dataset.mac;
-    if (!mac) return;
-    const online = foot.dataset.online === "1";
-    if (online) return;
-
-    const btn = document.createElement("button");
-    btn.className = "mini-btn";
-    btn.textContent = "Wake";
-    btn.style.marginLeft = "8px";
-    btn.addEventListener("click", async (e) => {
-      e.stopPropagation();
-      btn.disabled = true;
-      btn.textContent = "Sent";
-      try {
-        await fetch("/api/v1/wake", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ mac }),
-        });
-      } catch {}
-      setTimeout(() => {
-        btn.disabled = false;
-        btn.textContent = "Wake";
-      }, 4000);
-    });
-    foot.appendChild(btn);
-  });
-}
-
 fetchHistory();
 renderConnections();
 setInterval(fetchHistory, 15000);
 setInterval(renderConnections, 5000);
-setInterval(hookWakeButtons, 3000);
 setInterval(drawLatency, 5000);
 window.addEventListener("resize", drawLatency);

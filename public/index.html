@@ -12,7 +12,7 @@
 :root{
   --bg-0:#08090b; --bg-1:#0d0f12; --bg-2:#131619; --bg-3:#1a1e22;
   --line-1:rgba(255,255,255,.055); --line-2:rgba(255,255,255,.10); --line-3:rgba(255,255,255,.16);
-  --text-1:#f0f2f5; --text-2:#98a1ab; --text-3:#5a636d;
+  --text-1:#f0f2f5; --text-2:#a3acb6; --text-3:#7f8994;
   --accent:#6e7bff; --accent-soft:rgba(110,123,255,.14); --violet:#9b6eff;
   --up:#34d399; --warn:#fbbf24; --crit:#fb7185; --unknown:#5c6670;
   --glass-bg:color-mix(in oklab,#0d0f12 68%,transparent);
@@ -24,7 +24,7 @@
 [data-theme="light"]{
   --bg-0:#f6f7f9; --bg-1:#fff; --bg-2:#f2f4f7; --bg-3:#e9ecf1;
   --line-1:rgba(9,12,18,.07); --line-2:rgba(9,12,18,.12); --line-3:rgba(9,12,18,.20);
-  --text-1:#0b0e13; --text-2:#5c6672; --text-3:#8b949f;
+  --text-1:#0b0e13; --text-2:#505a66; --text-3:#687280;
   --accent:#4f5ee8; --accent-soft:rgba(79,94,232,.10); --violet:#7c4fe8;
   --up:#0f9d6e; --warn:#c77d05; --crit:#dc3d5a; --unknown:#98a1ab;
   --glass-bg:color-mix(in oklab,#fff 72%,transparent);
@@ -102,15 +102,14 @@ header.topbar{position:relative;z-index:10;display:flex;align-items:center;gap:1
 
 main.content{position:relative;min-height:0;flex:1;overflow-y:auto}
 .content-inner{max-width:1440px;margin:0 auto;padding:20px}
+/* Phones: the rail only scrolls the page, and it ate half the screen. */
+@media(max-width:760px){aside.rail{display:none}.content-inner{padding:16px}header.topbar{padding:0 16px}}
 
 .hero{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 @media(max-width:1180px){.hero{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.hero{grid-template-columns:1fr}}
 .split{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:12px;margin-top:12px}
 @media(max-width:1180px){.split{grid-template-columns:1fr}}
-.devices-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-@media(max-width:1180px){.devices-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:760px){.devices-grid{grid-template-columns:1fr}}
 .section{display:flex;align-items:baseline;justify-content:space-between;margin:20px 2px 10px}
 .section h2{font-size:12.5px;font-weight:650;letter-spacing:-.01em;margin:0}
 .section .hint{font-size:10.5px;color:var(--text-3)}
@@ -172,23 +171,76 @@ canvas#traffic{display:block;width:100%;height:232px}
 /* network map */
 .map-wrap{position:relative;height:400px;margin-top:4px}
 canvas#map{display:block;width:100%;height:100%;cursor:pointer}
-.map-legend{display:flex;align-items:center;gap:16px;padding:0 15px 12px;font-size:10.5px;color:var(--text-3)}
+.map-legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;padding:0 15px 12px;font-size:10.5px;color:var(--text-3)}
 .map-legend .dot{width:7px;height:7px;border-radius:99px;border:1px solid currentColor;margin-right:6px;display:inline-block;vertical-align:-1px}
+.map-legend span{white-space:nowrap}
 .map-legend .spacer{margin-left:auto}
 
-/* device card */
-.device{padding:15px}
-.dev-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
-.dev-name{display:flex;align-items:center;gap:8px;min-width:0}
-.dev-name h3{margin:0;font-size:13px;font-weight:650;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.dev-sub{display:flex;align-items:center;gap:8px;margin-top:2px;padding-left:16px}
-.dev-sub .ip{font-size:11px;color:var(--text-3)}
-.dev-sub .sep{color:var(--text-3)}
-.dev-sub .vend{font-size:11px;color:var(--text-3)}
-.dev-foot{display:flex;align-items:center;gap:10px;margin-top:12px;padding-top:10px;
-  border-top:1px solid var(--line-1);font-size:10.5px;color:var(--text-3)}
-.dev-foot .right{margin-left:auto}
-.dev-foot .mono{font-size:10px}
+@media(max-width:640px){.map-wrap{height:540px}}
+
+/* right now — the whole house at a glance */
+.now{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.3fr) minmax(0,1fr)}
+.now>div{padding:16px 18px;min-width:0}
+.now>div+div{border-left:1px solid var(--line-1)}
+@media(max-width:980px){.now{grid-template-columns:1fr}.now>div+div{border-left:0;border-top:1px solid var(--line-1)}}
+.now .k{font-size:10.5px;font-weight:650;letter-spacing:.10em;text-transform:uppercase;color:var(--text-3)}
+.now .big{display:flex;align-items:baseline;gap:6px;margin-top:8px}
+.now .big b{font-size:34px;font-weight:650;letter-spacing:-.035em;line-height:1}
+.now .big span{font-size:12px;color:var(--text-2)}
+.now .upline{margin-top:4px;font-size:12px;color:var(--text-2)}
+svg.trend{display:block;width:100%;height:40px;margin-top:10px}
+.top-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;margin-top:10px;font-size:12px}
+.top-row .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-row .v{color:var(--text-2)}
+.top-row .bar{grid-column:1/-1;height:4px;border-radius:99px;background:var(--line-1);overflow:hidden}
+.top-row .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--violet));transition:width .6s var(--ease-out)}
+.health{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:15px;font-weight:650}
+.hdot{width:9px;height:9px;border-radius:99px;flex:0 0 auto;box-shadow:0 0 12px 0 currentColor;background:currentColor}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:10px 0 0;font-size:12px}
+.facts dt{color:var(--text-3)}
+.facts dd{margin:0;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hint-box{margin:10px 0 0;font-size:12px;line-height:1.6;color:var(--text-2)}
+.hint-box code{font-family:"JetBrains Mono",monospace;font-size:11px;background:var(--bg-3);padding:2px 6px;border-radius:5px;color:var(--text-1);overflow-wrap:break-word}
+
+/* device table */
+.table-wrap{overflow-x:auto}
+.dev-table{width:100%;border-collapse:collapse;font-size:12px}
+.dev-table th{padding:10px 14px;text-align:left;font-size:10px;font-weight:650;letter-spacing:.09em;text-transform:uppercase;color:var(--text-3);border-bottom:1px solid var(--line-1);white-space:nowrap}
+.dev-table td{padding:10px 14px;border-bottom:1px solid var(--line-1);vertical-align:middle;white-space:nowrap}
+.dev-table tbody tr:last-child td{border-bottom:0}
+.dev-table tbody tr{transition:background .15s}
+.dev-table tbody tr:hover{background:rgba(255,255,255,.025)}
+[data-theme="light"] .dev-table tbody tr:hover{background:rgba(9,12,18,.025)}
+.dev-table tr.off td:not(.c-ping){opacity:.5}
+.dev-cell{display:flex;align-items:center;gap:10px;min-width:0}
+.dev-ic{position:relative;display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--bg-3);color:var(--text-2);flex:0 0 auto}
+.dev-ic svg{width:15px;height:15px;stroke:currentColor;stroke-width:1.8;fill:none}
+.dev-ic .st{position:absolute;right:-2px;bottom:-2px;width:9px;height:9px;border-radius:99px;border:2px solid var(--bg-1);background:var(--up)}
+tr.off .dev-ic .st{background:var(--crit)}
+.dev-cell .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;max-width:240px}
+.dev-cell .sub{font-size:10.5px;color:var(--text-3);overflow:hidden;text-overflow:ellipsis}
+.rate b{font-weight:600}
+.rate span{color:var(--text-3);margin-left:8px}
+.ubar{height:3px;width:130px;margin-top:6px;border-radius:99px;background:var(--line-1);overflow:hidden}
+.ubar i{display:block;height:100%;border-radius:99px;background:var(--accent);transition:width .6s var(--ease-out)}
+svg.dspark{display:block;width:80px;height:20px}
+.sig{display:inline-flex;align-items:flex-end;gap:2px;height:12px;margin-right:6px;vertical-align:-1px}
+.sig i{width:3px;border-radius:1px;background:var(--line-2)}
+.sig i:nth-child(1){height:25%}.sig i:nth-child(2){height:50%}.sig i:nth-child(3){height:75%}.sig i:nth-child(4){height:100%}
+.sig.good i.on{background:var(--up)}.sig.fair i.on{background:var(--warn)}.sig.bad i.on{background:var(--crit)}
+.muted{color:var(--text-3)}
+@media(max-width:760px){
+  .dev-table thead{display:none}
+  .dev-table,.dev-table tbody{display:block}
+  .dev-table tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;padding:11px 14px;border-bottom:1px solid var(--line-1)}
+  .dev-table tbody tr:last-child{border-bottom:0}
+  .dev-table td{display:block;padding:0;border:0;min-width:0}
+  .dev-table td.c-spark,.dev-table td.c-via{display:none}
+  .dev-table td.c-use,.dev-table td.c-ping{text-align:right}
+  .dev-table td.c-sig{padding-left:40px;font-size:11px;color:var(--text-2)}
+  .ubar{width:auto;margin-left:auto;max-width:110px}
+  .dev-cell .nm{max-width:none}
+}
 
 .status{position:relative;display:inline-grid;place-items:center;flex:0 0 auto}
 .status .ring{position:absolute;inset:0;border-radius:99px;border:1px solid currentColor}
@@ -283,6 +335,42 @@ canvas#latency{display:block;width:100%;height:132px}
     <main class="content grid-bg" id="content">
       <div class="content-inner">
         <div id="banner"></div>
+        <section class="panel now" id="now" aria-live="off"></section>
+
+        <div class="section">
+          <h2>Devices</h2>
+          <span class="hint" id="deviceHint"></span>
+        </div>
+        <section class="panel">
+          <div class="table-wrap">
+            <table class="dev-table">
+              <thead><tr>
+                <th>Device</th><th>Using now</th><th>Last minute</th><th>Signal</th><th>Connected via</th><th>Ping</th>
+              </tr></thead>
+              <tbody id="devices"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <div class="section">
+          <h2>Network map</h2>
+          <span class="hint" id="mapHint"></span>
+        </div>
+        <section class="panel">
+          <div class="map-wrap"><canvas id="map" role="img" aria-label="Map of the network: internet, router, access points and devices"></canvas></div>
+          <div class="map-legend">
+            <span><i class="dot" style="color:var(--up)"></i>good signal</span>
+            <span><i class="dot" style="color:var(--warn)"></i>weak signal</span>
+            <span><i class="dot" style="color:var(--crit)"></i>offline</span>
+            <span><i class="dot" style="color:var(--violet)"></i>router / access point</span>
+            <span class="spacer">thicker line = more traffic</span>
+          </div>
+        </section>
+
+        <div class="section">
+          <h2>This PC</h2>
+          <span class="hint">the computer running vantage</span>
+        </div>
         <section class="hero" id="hero"></section>
 
         <div class="split">
@@ -347,26 +435,6 @@ canvas#latency{display:block;width:100%;height:132px}
         <section class="panel">
           <div class="conn-list" id="connList"></div>
         </section>
-
-        <div class="section">
-          <h2>Network map</h2>
-          <span class="hint">everything your PC can see right now</span>
-        </div>
-        <section class="panel">
-          <div class="map-wrap"><canvas id="map"></canvas></div>
-          <div class="map-legend">
-            <span><i class="dot" style="color:var(--up)"></i>answering</span>
-            <span><i class="dot" style="color:var(--crit)"></i>not answering</span>
-            <span><i class="dot" style="color:var(--accent)"></i>this PC</span>
-            <span class="spacer">hover a device to see its name</span>
-          </div>
-        </section>
-
-        <div class="section">
-          <h2>Devices on your network</h2>
-          <span class="hint" id="deviceHint"></span>
-        </div>
-        <section class="devices-grid" id="devices"></section>
       </div>
     </main>
   </div>
@@ -383,6 +451,9 @@ const S = {
   lastSeries: [],
   hover: { x: null },
   mapHover: null,
+  seenEvents: new Set(),
+  house: [],                // last 60s of whole-house { down, up }
+  devHist: new Map(),       // mac -> last 60s of down+up
 };
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -398,6 +469,59 @@ function bpsParts(v){
   return { value: n.toFixed(d), unit: UNITS[i] };
 }
 function rateText(v){ const p = bpsParts(v); return p.value + ' ' + p.unit; }
+// Device names come from DHCP — any device on the WiFi picks its own. Escape them.
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
+function bytesText(n){
+  if (!n) return '—';
+  const u = ['B','KB','MB','GB','TB']; let i = 0;
+  while (n >= 1000 && i < u.length - 1){ n /= 1000; i++; }
+  return n.toFixed(n >= 100 ? 0 : 1) + ' ' + u[i];
+}
+function sparkSvg(vals, cls, colour){
+  const W = 100, H = 20;
+  if (vals.length < 2) return `<svg class="${cls}" viewBox="0 0 ${W} ${H}" aria-hidden="true"></svg>`;
+  const max = Math.max(...vals, 1);
+  const pts = vals.map((v, i) => `${(i / (vals.length - 1) * W).toFixed(1)},${(H - 1 - (v / max) * (H - 2)).toFixed(1)}`).join(' ');
+  return `<svg class="${cls}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
+    <polygon points="0,${H} ${pts} ${W},${H}" fill="${colour}" opacity=".16"/>
+    <polyline points="${pts}" fill="none" stroke="${colour}" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>`;
+}
+// Router rates when we have them; this PC always knows its own.
+function ratesOf(dev, d){
+  if (dev.downBps != null) return { down: dev.downBps, up: dev.upBps || 0 };
+  if (dev.self) return { down: d.totals.inBps || 0, up: d.totals.outBps || 0 };
+  return null;
+}
+// Signal → { level 0-4, tone, text }. Router gives dBm; this PC's WiFi gives %.
+function signalOf(dev, d){
+  if (dev.rssi != null){
+    const v = dev.rssi;
+    const level = v >= -60 ? 4 : v >= -67 ? 3 : v >= -75 ? 2 : v >= -85 ? 1 : 0;
+    return { level, tone: level >= 3 ? 'good' : level === 2 ? 'fair' : 'bad', text: v + ' dBm' };
+  }
+  if (dev.self && d.wifi && d.wifi.connected && d.wifi.signal != null){
+    const v = d.wifi.signal;
+    const level = v >= 75 ? 4 : v >= 55 ? 3 : v >= 40 ? 2 : 1;
+    return { level, tone: level >= 3 ? 'good' : level === 2 ? 'fair' : 'bad', text: v + '%' };
+  }
+  return null;
+}
+const ICONS = {
+  phone:  '<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
+  laptop: '<rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/>',
+  router: '<rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 16.5h.01M11 16.5h.01M8 13 6 6M16 13l2-7"/>',
+  tv:     '<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8"/>',
+  other:  '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/>',
+};
+function kindOf(dev){
+  if (dev.isAp || (/\.1$/.test(dev.ip) && !dev.self)) return 'router';
+  if (dev.self) return 'laptop';
+  const s = `${dev.name || ''} ${dev.vendor || ''} ${dev.kind || ''}`;
+  if (/iphone|ipad|android|galaxy|samsung|huawei|pixel|xiaomi|redmi|oppo|vivo|nokia|phone|s2\d/i.test(s)) return 'phone';
+  if (/tv|roku|chromecast|fire.?stick|apple.?tv|hisense|lg-|sony/i.test(s)) return 'tv';
+  if (/laptop|desktop|pc|macbook|imac|thinkpad|dell|hp|lenovo|windows/i.test(s)) return 'laptop';
+  return 'other';
+}
 function speedText(v){
   if (!v) return '—';
   if (v >= 1e9) return (v / 1e9).toFixed(v % 1e9 === 0 ? 0 : 1) + ' Gbps';
@@ -441,12 +565,28 @@ async function fetchSnapshot(){
     const data = await res.json();
     S.data = data;
     S.error = data.error || null;
+    record(data);
     setLive(true);
     render();
   } catch (err) {
     S.error = String(err.message || err);
     setLive(false);
     renderBanner();
+  }
+}
+
+// The agent only sends "now"; the last minute of each line lives here.
+function record(d){
+  const h = d.house || { downBps: d.totals.inBps, upBps: d.totals.outBps };
+  S.house.push({ down: h.downBps || 0, up: h.upBps || 0 });
+  if (S.house.length > 30) S.house.shift();
+  for (const dev of d.devices || []){
+    const r = ratesOf(dev, d);
+    if (!r) continue;
+    const a = S.devHist.get(dev.mac) || [];
+    a.push(r.down + r.up);
+    if (a.length > 30) a.shift();
+    S.devHist.set(dev.mac, a);
   }
 }
 
@@ -482,6 +622,7 @@ function renderHero(){
   const host = $('#hero');
   const d = S.data;
   const prev = host.dataset.once === '1';
+  const anim = prev ? '' : ' rise'; // animate the first paint only, not every 2s refresh
 
   if (!d){
     host.innerHTML = '';
@@ -524,7 +665,7 @@ function renderHero(){
   host.innerHTML = '';
 
   wants.forEach((w, i) => {
-    const card = el('div', 'panel hoverable stat rise');
+    const card = el('div', 'panel hoverable stat' + anim);
     card.style.animationDelay = (i * 55) + 'ms';
     card.innerHTML = `
       <div class="stat-head">
@@ -544,7 +685,7 @@ function renderHero(){
   /* WiFi card */
   const sig = wifi.connected ? wifi.signal : null;
   const sigColour = sig == null ? 'var(--unknown)' : sig < 45 ? 'var(--crit)' : sig < 65 ? 'var(--warn)' : 'var(--up)';
-  const wifiCard = el('div', 'panel hoverable stat rise');
+  const wifiCard = el('div', 'panel hoverable stat' + anim);
   wifiCard.style.animationDelay = '110ms';
   wifiCard.innerHTML = `
     <div class="stat-head">
@@ -567,7 +708,7 @@ function renderHero(){
 
   /* Problems card */
   const problems = (d.events || []).filter(e => e.severity >= 1).length;
-  const pCard = el('div', 'panel hoverable stat rise');
+  const pCard = el('div', 'panel hoverable stat' + anim);
   pCard.style.animationDelay = '165ms';
   pCard.innerHTML = `
     <div class="stat-head">
@@ -824,11 +965,12 @@ function renderEvents(){
   bad.slice(0, 12).forEach((e, i) => {
     const c = e.severity >= 2 ? 'var(--crit)' : 'var(--warn)';
     const node = el('div', 'event');
-    node.style.animation = `fadeUp .4s var(--ease-out) ${i * 35}ms both`;
+    if (!S.seenEvents.has(e.id)) node.style.animation = `fadeUp .4s var(--ease-out) ${i * 35}ms both`;
+    S.seenEvents.add(e.id);
     node.innerHTML = `
       <svg viewBox="0 0 24 24" style="stroke:${c}"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
       <div class="body">
-        <div class="msg">${e.message}</div>
+        <div class="msg">${esc(e.message)}</div>
         <div class="meta"><span class="kind">${e.kind}</span><span>·</span><span>${ago(e.at)}</span></div>
       </div>
       <button class="ack">ok</button>`;
@@ -846,191 +988,389 @@ function renderEvents(){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   NETWORK MAP
+   RIGHT NOW — the whole house at a glance
    ═══════════════════════════════════════════════════════════════ */
+function renderNow(){
+  const host = $('#now');
+  const d = S.data;
+  if (!d){ host.innerHTML = ''; return; }
+
+  const house = d.house;
+  const h = house || { downBps: d.totals.inBps, upBps: d.totals.outBps };
+  const dn = bpsParts(h.downBps);
+  const devices = d.devices || [];
+  const using = devices
+    .filter(x => !x.isAp && ratesOf(x, d))
+    .map(x => { const r = ratesOf(x, d); return { x, total: r.down + r.up }; })
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 3);
+  const topMax = Math.max(1, ...using.map(u => u.total));
+
+  const r = d.router && !d.router.error ? d.router : {};
+  const lat = d.latency || {};
+  const wanUp = r.wanUp ?? (lat.internet != null ? true : null);
+  const [tone, label] =
+    wanUp === false ? ['var(--crit)', 'Internet is down']
+    : lat.internet == null ? ['var(--unknown)', 'Checking the internet…']
+    : lat.internet > 120 ? ['var(--warn)', 'Internet is slow']
+    : ['var(--up)', 'Internet is fine'];
+  const online = devices.filter(x => x.online).length;
+
+  const middle = !house
+    ? `<p class="hint-box">Only this PC's traffic is visible right now. To see what every device is using, start vantage with your router password:<br><code>$env:VANTAGE_ROUTER_PASS="…"; node agent.mjs</code></p>`
+    : using.length && using[0].total >= 1000
+      ? using.map(u => `
+        <div class="top-row">
+          <span class="nm">${esc(u.x.self ? 'This PC' : (u.x.name || u.x.ip))}</span>
+          <span class="v num">${rateText(u.total)}</span>
+          <span class="bar"><i style="width:${(u.total / topMax * 100).toFixed(1)}%"></i></span>
+        </div>`).join('')
+      : `<p class="hint-box">Nobody is using much right now.</p>`;
+
+  host.innerHTML = `
+    <div>
+      <div class="k">${house ? 'Whole house · now' : 'This PC · now'}</div>
+      <div class="big"><b class="num">${dn.value}</b><span>${dn.unit} down</span></div>
+      <div class="upline num">↑ ${rateText(h.upBps)} up</div>
+      ${sparkSvg(S.house.map(x => x.down), 'trend', '#6E7BFF')}
+    </div>
+    <div>
+      <div class="k">Using the most</div>
+      ${middle}
+    </div>
+    <div>
+      <div class="k">Internet</div>
+      <div class="health"><span class="hdot" style="color:${tone}"></span>${label}</div>
+      <dl class="facts">
+        <dt>Latency</dt><dd class="num">${lat.internet != null ? Math.round(lat.internet) + ' ms' : '—'}</dd>
+        ${r.radio ? `<dt>Radio</dt><dd>${esc(r.radio)}${r.signal ? ' · ' + esc(r.signal) : ''}</dd>` : ''}
+        ${r.dayBytes ? `<dt>Used today</dt><dd class="num">${bytesText(r.dayBytes)}</dd>` : ''}
+        ${r.monthBytes ? `<dt>This month</dt><dd class="num">${bytesText(r.monthBytes)}</dd>` : ''}
+        <dt>Devices online</dt><dd class="num">${online} of ${devices.length}</dd>
+      </dl>
+    </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DEVICES
+   ═══════════════════════════════════════════════════════════════ */
+function deviceRow(dev, max, d){
+  const kind = kindOf(dev);
+  const name = dev.self ? 'This PC' : (dev.name || dev.ip);
+  const r = ratesOf(dev, d);
+  const total = r ? r.down + r.up : 0;
+  // The title is the IP when a device gives no name; don't repeat it underneath.
+  const named = dev.self || dev.name;
+  const sub = [named ? dev.ip : null, dev.self ? null : (dev.kind || dev.vendor)].filter(Boolean).join(' · ')
+    || (dev.isAp ? 'mesh node' : kind === 'router' ? 'router' : 'no name given');
+  const sig = signalOf(dev, d);
+  const via = dev.isAp ? 'access point'
+    : dev.via ? `${esc(dev.via)}${dev.band ? ' · ' + esc(dev.band) : ''}`
+    : dev.self && d.wifi && d.wifi.ssid ? `${esc(d.wifi.ssid)}`
+    : '<span class="muted">—</span>';
+  const ping = dev.online
+    ? (dev.rttMs != null ? Math.round(dev.rttMs) + ' ms' : 'online')
+    : `<span class="muted">no reply</span> <button class="mini-btn" data-wake="${esc(dev.mac)}" style="margin-left:6px">Wake</button>`;
+
+  return `<tr class="${dev.online ? '' : 'off'}">
+    <td class="c-dev"><div class="dev-cell">
+      <span class="dev-ic" title="${kind}"><svg viewBox="0 0 24 24">${ICONS[kind]}</svg><span class="st"></span></span>
+      <div style="min-width:0"><div class="nm">${esc(name)}</div><div class="sub mono">${esc(sub)}</div></div>
+    </div></td>
+    <td class="c-use">${r
+      ? `<div class="rate num"><b>↓ ${rateText(r.down)}</b><span>↑ ${rateText(r.up)}</span></div>
+         <div class="ubar"><i style="width:${Math.max(total ? 2 : 0, total / max * 100).toFixed(1)}%"></i></div>`
+      : '<span class="muted">—</span>'}</td>
+    <td class="c-spark">${sparkSvg(S.devHist.get(dev.mac) || [], 'dspark', '#6E7BFF')}</td>
+    <td class="c-sig">${sig
+      ? `<span class="sig ${sig.tone}">${[1,2,3,4].map(i => `<i class="${i <= sig.level ? 'on' : ''}"></i>`).join('')}</span><span class="mono">${sig.text}</span>`
+      : '<span class="muted">—</span>'}</td>
+    <td class="c-via">${via}</td>
+    <td class="c-ping num">${ping}</td>
+  </tr>`;
+}
+
+function renderDevices(){
+  const host = $('#devices');
+  const d = S.data;
+
+  if (!d){
+    $('#deviceHint').textContent = '';
+    host.innerHTML = `<tr><td colspan="6" class="muted" style="padding:20px">Start the agent to discover devices on your network.</td></tr>`;
+    return;
+  }
+
+  const total = x => { const r = ratesOf(x, d); return r ? r.down + r.up : 0; };
+  const list = (d.devices || []).slice().sort((a, b) => {
+    if (a.online !== b.online) return a.online ? -1 : 1;
+    const diff = total(b) - total(a);
+    if (Math.abs(diff) > 500) return diff;           // busiest first, ignore idle noise
+    if (a.self !== b.self) return a.self ? -1 : 1;
+    return a.ip.localeCompare(b.ip, undefined, { numeric: true });
+  });
+  const max = Math.max(1, ...list.map(total));
+
+  $('#deviceHint').textContent = `${list.filter(x => x.online).length} online · ${list.length} seen`
+    + (d.house ? ' · sorted by who is using the most' : ' · router not connected');
+
+  host.innerHTML = list.length
+    ? list.map(dev => deviceRow(dev, max, d)).join('')
+    : `<tr><td colspan="6" class="muted" style="padding:20px">No devices found. Make sure you are on WiFi or Ethernet.</td></tr>`;
+}
+
+// One listener for every row's Wake button — rows are redrawn every 2s.
+$('#devices').addEventListener('click', async e => {
+  const btn = e.target.closest('[data-wake]');
+  if (!btn) return;
+  btn.disabled = true;
+  btn.textContent = 'Sent';
+  try {
+    await fetch('/api/v1/wake', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mac: btn.dataset.wake }),
+    });
+  } catch {}
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   NETWORK MAP — the real shape: internet → router → mesh → devices
+   ═══════════════════════════════════════════════════════════════ */
+function buildTopology(d){
+  const devices = d.devices || [];
+  const aps = d.aps || [];
+  const nodes = [];
+  const byId = new Map();
+  const add = n => { nodes.push(n); byId.set(n.id, n); return n; };
+
+  add({ id: 'net', kind: 'net', label: 'Internet', depth: 0, rate: 0, online: true });
+
+  const apIps = new Set(aps.map(a => a.ip));
+  const apIdByName = new Map();
+  let rootId;
+  if (aps.length){
+    const root = aps.find(a => a.root) || aps[0];
+    rootId = 'ap:' + root.ip;
+    for (const a of [root, ...aps.filter(x => x !== root)]){
+      add({ id: 'ap:' + a.ip, kind: 'ap', label: a.name, sub: a.ip, depth: a === root ? 1 : 2,
+            parent: a === root ? 'net' : rootId, wire: a.backhaul, rate: 0, online: true });
+      apIdByName.set(a.name, 'ap:' + a.ip);
+    }
+  } else {
+    // No router login: the best guess at the router is the .1 address.
+    const gw = devices.find(x => /\.1$/.test(x.ip) && !x.self);
+    rootId = 'ap:gw';
+    add({ id: rootId, kind: 'ap', label: (gw && gw.name) || 'Router', sub: gw ? gw.ip : '', depth: 1,
+          parent: 'net', rate: 0, online: gw ? gw.online : true });
+    if (gw) apIps.add(gw.ip);
+  }
+
+  const leafDepth = Math.max(...nodes.map(n => n.depth)) + 1;
+  const leaves = devices.filter(x => !apIps.has(x.ip)).map(x => {
+    const r = ratesOf(x, d);
+    return add({
+      id: 'd:' + x.ip, kind: 'dev', dev: x, depth: leafDepth,
+      label: x.self ? 'This PC' : (x.name || x.ip), sub: x.ip,
+      parent: (x.via && apIdByName.get(x.via)) || rootId,
+      rate: r ? r.down + r.up : 0, down: r ? r.down : 0, up: r ? r.up : 0,
+      online: x.online, rssi: x.rssi,
+    });
+  });
+
+  // Roll each device's traffic up through its access point to the internet.
+  for (const l of leaves){
+    for (let p = byId.get(l.parent); p; p = byId.get(p.parent)) p.rate += l.rate;
+  }
+  return { nodes, byId, leaves, leafDepth };
+}
+
+function layoutTopology(t, w, h, wide){
+  const order = t.nodes.filter(n => n.kind === 'ap').map(n => n.id);
+  const leaves = t.leaves.slice().sort((a, b) => order.indexOf(a.parent) - order.indexOf(b.parent) || b.rate - a.rate);
+  const D = t.leafDepth;
+
+  if (wide){
+    // Columns left → right; device names sit to the right of the last column.
+    const colX = dep => 48 + (dep / D) * (w * 0.64 - 48);
+    const top = 30, bot = h - 30;
+    leaves.forEach((n, i) => {
+      n.x = colX(D);
+      n.y = leaves.length === 1 ? h / 2 : top + (i / (leaves.length - 1)) * (bot - top);
+    });
+    for (let dep = D - 1; dep >= 0; dep--){
+      for (const n of t.nodes.filter(x => x.depth === dep)){
+        const kids = t.nodes.filter(x => x.parent === n.id);
+        n.x = colX(dep);
+        n.y = kids.length ? kids.reduce((a, k) => a + k.y, 0) / kids.length : h / 2;
+      }
+    }
+  } else {
+    // Phone: rows top → bottom, devices in a grid underneath.
+    const cols = Math.min(3, Math.max(1, leaves.length));
+    const rows = Math.ceil(leaves.length / cols);
+    const gridTop = h * 0.46;
+    const rowH = rows > 1 ? (h - 46 - gridTop) / (rows - 1) : 0;
+    leaves.forEach((n, i) => {
+      n.x = ((i % cols) + 0.5) * (w / cols);
+      n.y = gridTop + Math.floor(i / cols) * rowH;
+    });
+    const rowY = dep => 26 + dep * ((gridTop - 84) / Math.max(1, D - 1));
+    for (let dep = D - 1; dep >= 0; dep--){
+      for (const n of t.nodes.filter(x => x.depth === dep)){
+        n.y = rowY(dep);
+        n.x = w / 2 + (n.kind === 'ap' && n.depth === 2 ? (order.indexOf(n.id) % 2 ? 1 : -1) * w * 0.18 : 0);
+      }
+    }
+  }
+}
+
+function bez(a, b, c, d, t){
+  const u = 1 - t;
+  return {
+    x: u*u*u*a.x + 3*u*u*t*b.x + 3*u*t*t*c.x + t*t*t*d.x,
+    y: u*u*u*a.y + 3*u*u*t*b.y + 3*u*t*t*c.y + t*t*t*d.y,
+  };
+}
+
+function nodeColour(n){
+  if (n.kind === 'net') return '#6E7BFF';
+  if (n.kind === 'ap') return '#9B6EFF';
+  if (n.online === false) return '#FB7185';
+  if (n.rssi != null && n.rssi < -75) return '#FBBF24';
+  return '#34D399';
+}
+
 function drawMap(now){
   const canvas = $('#map');
   const { w, h, ctx } = fitCanvas(canvas);
   ctx.clearRect(0, 0, w, h);
 
   const d = S.data;
-  const devices = (d && d.devices) || [];
-  if (!devices.length){
+  if (!d || !(d.devices || []).length){
     ctx.fillStyle = cssVar('--text-3');
     ctx.font = '12px Inter, system-ui, sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText('No devices found yet.', w / 2, h / 2);
+    canvas._nodes = [];
     return;
   }
 
-  const cx = w / 2, cy = h / 2;
-  const radius = Math.min(w, h) * 0.34;
+  const wide = w >= 640;
+  const t = buildTopology(d);
+  layoutTopology(t, w, h, wide);
+  const tt = now / 1000;
+  const text1 = cssVar('--text-1'), text2 = cssVar('--text-2'), text3 = cssVar('--text-3'), bg = cssVar('--bg-1');
 
-  const nodes = devices.slice(0, 28).map((dev, i) => {
-    const angle = (i / Math.min(devices.length, 28)) * Math.PI * 2 - Math.PI / 2;
-    const jitter = 0.86 + ((i * 37) % 13) / 40;
-    return {
-      ...dev,
-      x: cx + Math.cos(angle) * radius * jitter,
-      y: cy + Math.sin(angle) * radius * jitter,
-      r: dev.self ? 22 : 13,
-    };
-  });
+  /* links — thickness and moving dots follow the traffic on them */
+  for (const n of t.nodes){
+    if (!n.parent) continue;
+    const p = t.byId.get(n.parent);
+    const c1 = wide ? { x: (p.x + n.x) / 2, y: p.y } : { x: p.x, y: (p.y + n.y) / 2 };
+    const c2 = wide ? { x: (p.x + n.x) / 2, y: n.y } : { x: n.x, y: (p.y + n.y) / 2 };
+    const act = Math.min(1, Math.log10(1 + n.rate / 1e4) / 3); // 0 idle … 1 at ~10 Mbps
 
-  const self = nodes.find(n => n.self);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    ctx.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, n.x, n.y);
+    ctx.lineWidth = 1 + act * 4.5;
+    ctx.strokeStyle = n.online === false ? hexA('#FB7185', .35) : hexA('#6E7BFF', .16 + act * .5);
+    if (n.online === false) ctx.setLineDash([4, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
 
-  /* links to this PC */
-  if (self){
-    nodes.forEach(n => {
-      if (n === self) return;
-      ctx.beginPath();
-      ctx.moveTo(self.x, self.y);
-      ctx.lineTo(n.x, n.y);
-      ctx.strokeStyle = n.online ? 'rgba(255,255,255,.09)' : 'rgba(251,113,133,.18)';
-      ctx.lineWidth = 1;
-      if (!n.online) ctx.setLineDash([4, 4]);
-      ctx.stroke();
-      ctx.setLineDash([]);
+    if (n.wire){
+      const m = bez(p, c1, c2, n, .5);
+      ctx.font = '500 9.5px Inter, system-ui, sans-serif';
+      ctx.fillStyle = text3;
+      ctx.textAlign = wide ? 'center' : 'left'; ctx.textBaseline = wide ? 'bottom' : 'middle';
+      ctx.fillText(n.wire, wide ? m.x : m.x + 10, wide ? m.y - 6 : m.y);
+    }
 
-      if (n.online){
-        const t = now / 1000;
-        for (let k = 0; k < 2; k++){
-          const p = (t * 0.22 + k / 2 + (n.x % 7) / 7) % 1;
-          const px = self.x + (n.x - self.x) * p;
-          const py = self.y + (n.y - self.y) * p;
-          const alpha = Math.sin(p * Math.PI) * 0.7;
-          ctx.beginPath(); ctx.arc(px, py, 1.6, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(110,123,255,${alpha.toFixed(3)})`;
-          ctx.fill();
-        }
+    if (act > 0.02 && n.online !== false){
+      const dots = 1 + Math.round(act * 3);
+      for (let k = 0; k < dots; k++){
+        const q = (tt * (0.12 + act * 0.55) + k / dots + (n.label.length % 7) / 7) % 1;
+        const pt = bez(p, c1, c2, n, q);
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 1.4 + act * 1.4, 0, Math.PI * 2);
+        ctx.fillStyle = hexA('#A5AEFF', Math.sin(q * Math.PI) * .9);
+        ctx.fill();
       }
-    });
+    }
   }
 
   /* nodes */
-  nodes.forEach(n => {
-    const c = n.self ? '#6E7BFF' : n.online ? '#34D399' : '#FB7185';
-    const focused = S.mapHover === n.ip;
+  for (const n of t.nodes){
+    n.r = n.kind === 'net' ? 15 : n.kind === 'ap' ? 13 : (n.dev && n.dev.self ? 9 : 8);
+    const c = nodeColour(n);
+    const focused = S.mapHover === n.id;
 
     const halo = ctx.createRadialGradient(n.x, n.y, n.r * .4, n.x, n.y, n.r * 2.6);
-    halo.addColorStop(0, hexA(c, focused ? .22 : .10));
+    halo.addColorStop(0, hexA(c, focused ? .26 : .11));
     halo.addColorStop(1, hexA(c, 0));
     ctx.beginPath(); ctx.arc(n.x, n.y, n.r * 2.6, 0, Math.PI * 2);
     ctx.fillStyle = halo; ctx.fill();
 
     ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
-    ctx.fillStyle = cssVar('--bg-1');
-    ctx.fill();
+    ctx.fillStyle = bg; ctx.fill();
     ctx.strokeStyle = c;
-    ctx.lineWidth = focused ? 2.4 : 1.4;
+    ctx.lineWidth = focused ? 2.4 : 1.5;
     ctx.stroke();
 
-    if (n.self){
-      ctx.beginPath(); ctx.arc(n.x, n.y, 4, 0, Math.PI * 2);
+    if (n.kind !== 'dev' || (n.dev && n.dev.self)){
+      ctx.beginPath(); ctx.arc(n.x, n.y, n.kind === 'dev' ? 3 : 4, 0, Math.PI * 2);
       ctx.fillStyle = c; ctx.fill();
     }
 
-    if (!n.online){
-      const t = (now % 2400) / 2400;
-      ctx.beginPath(); ctx.arc(n.x, n.y, n.r * (1 + t * 1.3), 0, Math.PI * 2);
-      ctx.strokeStyle = hexA(c, .5 * (1 - t));
-      ctx.lineWidth = 1;
-      ctx.stroke();
+    const sub = n.kind === 'dev'
+      ? (n.rate >= 1000 ? (wide ? `↓ ${rateText(n.down)}  ↑ ${rateText(n.up)}` : `↓ ${rateText(n.down)}`) : n.rssi != null ? `${n.rssi} dBm` : n.online ? n.sub : 'offline')
+      : (n.rate >= 1000 ? rateText(n.rate) : (n.sub || ''));
+    const max = wide && n.kind === 'dev' ? 26 : wide ? 22 : 15;
+    const name = n.label.length > max ? n.label.slice(0, max - 1) + '…' : n.label;
+
+    ctx.font = (focused ? '650 ' : '600 ') + (n.kind === 'dev' ? '11px' : '11.5px') + ' Inter, system-ui, sans-serif';
+    ctx.fillStyle = focused ? text1 : (n.kind === 'dev' ? text2 : text1);
+    if (wide && n.kind === 'dev'){
+      ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+      ctx.fillText(name, n.x + n.r + 10, n.y - 1);
+      ctx.font = '500 10px Inter, system-ui, sans-serif';
+      ctx.fillStyle = text3;
+      ctx.fillText(sub, n.x + n.r + 10, n.y + 11);
+    } else {
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      ctx.fillText(name, n.x, n.y + n.r + 6);
+      ctx.font = '500 10px Inter, system-ui, sans-serif';
+      ctx.fillStyle = text3;
+      ctx.fillText(sub, n.x, n.y + n.r + 20);
     }
+  }
 
-    ctx.font = focused ? '600 10.5px Inter, system-ui, sans-serif' : '500 9.5px Inter, system-ui, sans-serif';
-    ctx.fillStyle = focused ? cssVar('--text-1') : cssVar('--text-2');
-    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-    const label = n.self ? 'this PC' : (n.name || n.ip);
-    ctx.fillText(label.length > 20 ? label.slice(0, 19) + '…' : label, n.x, n.y + n.r + 7);
-  });
-
-  canvas._nodes = nodes;
+  canvas._nodes = t.nodes;
+  $('#mapHint').textContent = (d.aps || []).length
+    ? `${d.aps.length} access point${d.aps.length === 1 ? '' : 's'} · live from the router`
+    : 'guessed layout · connect the router for the real one';
 }
 $('#map').addEventListener('mousemove', e => {
   const canvas = $('#map');
   const r = canvas.getBoundingClientRect();
   const x = e.clientX - r.left, y = e.clientY - r.top;
-  const hit = (canvas._nodes || []).find(n => Math.hypot(n.x - x, n.y - y) <= n.r + 6);
-  S.mapHover = hit ? hit.ip : null;
+  const hit = (canvas._nodes || []).find(n => Math.hypot(n.x - x, n.y - y) <= (n.r || 8) + 6);
+  S.mapHover = hit ? hit.id : null;
   canvas.style.cursor = hit ? 'pointer' : 'default';
 });
 $('#map').addEventListener('mouseleave', () => { S.mapHover = null; });
 
 /* ═══════════════════════════════════════════════════════════════
-   DEVICES
-   ═══════════════════════════════════════════════════════════════ */
-function renderDevices(){
-  const host = $('#devices');
-  const d = S.data;
-  host.innerHTML = '';
-
-  if (!d){
-    $('#deviceHint').textContent = '';
-    host.innerHTML = `<div class="panel" style="padding:20px;color:var(--text-3);font-size:12px">
-      Start the agent to discover devices on your network.</div>`;
-    return;
-  }
-
-  const list = (d.devices || []).slice().sort((a, b) => {
-    if (a.self) return -1;
-    if (b.self) return 1;
-    if (a.online !== b.online) return a.online ? -1 : 1;
-    return a.ip.localeCompare(b.ip, undefined, { numeric: true });
-  });
-
-  $('#deviceHint').textContent = `${list.filter(x => x.online).length} of ${list.length} answering`;
-
-  if (!list.length){
-    host.innerHTML = `<div class="panel" style="padding:20px;color:var(--text-3);font-size:12px">
-      No devices found. Make sure you are on WiFi or Ethernet.</div>`;
-    return;
-  }
-
-  list.forEach((dev, i) => {
-    const card = el('div', 'panel device rise');
-    card.style.animationDelay = Math.min(i * 40, 400) + 'ms';
-    const title = dev.self ? 'This PC' : (dev.name || dev.ip);
-    const sub = dev.self ? dev.ip : dev.ip;
-    card.innerHTML = `
-      <div class="dev-top">
-        <div class="dev-name">
-          ${statusDot(dev.online ? 'up' : 'down', 8, !dev.online)}
-          <h3>${title}</h3>
-        </div>
-      </div>
-      <div class="dev-sub">
-        <span class="ip mono">${sub}</span>
-        ${dev.kind ? `<span class="sep">·</span><span class="vend">${dev.kind}</span>` : (dev.vendor ? `<span class="sep">·</span><span class="vend">${dev.vendor}</span>` : '')}
-      </div>
-      <div class="dev-foot" data-mac="${dev.mac}" data-online="${dev.online ? '1' : '0'}">
-        <span class="mono">${dev.mac}</span>
-        <span class="right">${dev.downBps != null ? `↓ ${rateText(dev.downBps)} ↑ ${rateText(dev.upBps)} · ` : ''}${dev.online ? (dev.rttMs != null ? Math.round(dev.rttMs) + ' ms' : 'up') : 'no reply'}</span>
-      </div>`;
-    host.appendChild(card);
-  });
-}
-
-/* ═══════════════════════════════════════════════════════════════
    HISTORY
    ═══════════════════════════════════════════════════════════════ */
-let HISTORY = { hourly: [], latency: [], speed: [] };
-
-async function fetchHistory(){
-  try {
-    const res = await fetch('/api/v1/history', { cache: 'no-store' });
-    HISTORY = await res.json();
-    renderHeatmap();
-    renderSpeed();
-    drawLatency();
-  } catch {}
-}
+// History panels (heatmap, latency, speed test) live in extras.js.
 
 /* ═══════════════════════════════════════════════════════════════
    RENDER
    ═══════════════════════════════════════════════════════════════ */
 function render(){
   renderBanner();
+  renderNow();
   renderHero();
   renderConnection();
   renderEvents();
@@ -1060,9 +1400,9 @@ $$('.nav-item[data-nav]').forEach(item => {
     $('.crumbs').textContent = label;
     const target = {
       'Overview': 0,
-      'This PC': $('#connection').offsetTop - 100,
+      'This PC': $('#hero').offsetTop - 100,
       'Network': $('#map').offsetTop - 100,
-      'Alerts': 0,
+      'Alerts': $('#events').closest('section').offsetTop - 100,
     }[label] || 0;
     $('#content').scrollTo({ top: target, behavior: 'smooth' });
   });
