@@ -397,6 +397,7 @@ function bpsParts(v){
   const d = n >= 100 ? 0 : n >= 10 ? 1 : 2;
   return { value: n.toFixed(d), unit: UNITS[i] };
 }
+function rateText(v){ const p = bpsParts(v); return p.value + ' ' + p.unit; }
 function speedText(v){
   if (!v) return '—';
   if (v >= 1e9) return (v / 1e9).toFixed(v % 1e9 === 0 ? 0 : 1) + ' Gbps';
@@ -1004,7 +1005,7 @@ function renderDevices(){
       </div>
       <div class="dev-foot" data-mac="${dev.mac}" data-online="${dev.online ? '1' : '0'}">
         <span class="mono">${dev.mac}</span>
-        <span class="right">${dev.online ? (dev.rttMs != null ? Math.round(dev.rttMs) + ' ms' : 'up') : 'no reply'}</span>
+        <span class="right">${dev.downBps != null ? `↓ ${rateText(dev.downBps)} ↑ ${rateText(dev.upBps)} · ` : ''}${dev.online ? (dev.rttMs != null ? Math.round(dev.rttMs) + ' ms' : 'up') : 'no reply'}</span>
       </div>`;
     host.appendChild(card);
   });

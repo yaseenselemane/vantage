@@ -226,6 +226,7 @@ async function reverseName(ip) {
 const state = {
   prev: new Map(),          // adapter name -> { rx, tx, at }
   pingCache: new Map(),     // ip -> { online, rttMs, name }
+  clients: new Map(),       // mac -> router's view { ip, name, upBps, downBps }
   lastProbeAt: 0,
   links: [],
   wifi: { connected: false },
@@ -400,6 +401,13 @@ async function collect() {
     });
   }
 
+  // Devices the router has online but ARP has not seen — asleep phones, or
+  // the far side of the mesh extender.
+  for (const c of state.clients.values()) {
+    if (seen.has(c.ip) || !isHostAddress(c.ip)) continue;
+    seen.set(c.ip, { ip: c.ip, mac: c.mac, state: "Router", adapter: null, self: false });
+  }
+
   const list = [...seen.values()].slice(0, 64).sort((a, b) => (a.self ? -1 : b.self ? 1 : 0));
 
   const nowPing = Date.now();
@@ -431,7 +439,13 @@ async function collect() {
     return { ...d, ...result, vendor: vendorFor(d.mac) || null };
   });
 
-  state.devices = probed;
+  // The router sees every device's traffic; this PC only sees its own. A phone
+  // that ignores ping is still online if the router says so.
+  state.devices = probed.map((d) => {
+    const c = state.clients.get(d.mac);
+    if (!c) return d;
+    return { ...d, online: true, name: c.name || d.name, upBps: c.upBps, downBps: c.downBps };
+  });
 
   /* ---- the system's own total ---- */
   const upLinks = state.links.filter((l) => l.up);
@@ -680,6 +694,18 @@ setInterval(async () => {
     state.router = state.router || { error: String(err.message || err) };
   }
 }, 30000);
+
+/* live per-device rates, straight from the router */
+setInterval(async () => {
+  if (!routerReady) return;
+  try {
+    const list = await router.clients();
+    state.clients = new Map(list.map((c) => [c.mac, c]));
+  } catch {
+    routerReady = false;
+    state.clients = new Map(); // stale rates are worse than none
+  }
+}, 5000);
 
 /* ask the router for whole-house counters, if it speaks SNMP */
 setInterval(async () => {

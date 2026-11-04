@@ -17,3 +17,6 @@ Thumbs.db
 .env
 .env.local
 config.local.json
+
+# Router probe output (MACs, IPs)
+router-probe.json
