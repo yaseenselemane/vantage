@@ -69,6 +69,40 @@ Download was 28 Mbps. The signal was fine. The bottleneck was **bandwidth alloca
 
 ---
 
+## What building this taught me about networking
+
+**1. On a switched network, a computer only sees its own traffic.**
+WiFi and switches send each frame only to the device it's for, so this laptop can never measure what the phone next to it is downloading. The ARP table only lists devices the PC has already talked to. Pinging the subnet's broadcast address makes every awake device answer, which fills the table in one shot. Per-device traffic needs a vantage point that every packet passes through: the router, or a switch with port mirroring (SPAN).
+
+**2. The router already counts everything. You just have to ask.**
+The router does NAT for every device, so it keeps a connection-tracking table (conntrack): one entry per flow (source, destination, ports, protocol), each with byte and packet counters. Adding those up by source IP gives usage per device. This router also computes per-MAC rates itself, split into two paths: **hardware NAT offload** (the fast path, which skips the CPU) and **software NAT**. Count only one and you miss traffic.
+
+**3. Reading a router's permissions before guessing at its API.**
+The admin API is JSON-RPC over OpenWrt's `ubus`. Instead of trying endpoints blindly, `session access` returns the ACL: exactly which objects and methods this login may call. The standard `iwinfo assoclist` was blocked, while a vendor method (`net.info.get_mac_rate`) had what I needed. Least privilege, seen from the other side.
+
+**4. Mesh WiFi is a tree, not a star.**
+EasyMesh has a controller (the main unit) and agents (extenders), each with an AL MAC. Here the outdoor 5G unit has no WiFi clients at all. Every phone sits on the indoor extender, which reaches the router over a **wired (Ethernet) backhaul**. A star diagram with every device around one router hides that. The real tree shows which link everything depends on.
+
+**5. Signal in dBm, and why "connected" isn't "fine".**
+RSSI is logarithmic: every 3 dB is half the power. Rough guide: −60 dBm or better is excellent, −67 is enough for calls, −75 is fair, −85 and below is poor. Several devices here sat between −85 and −95 dBm, which explains slow phones better than any speed test. 2.4 GHz reaches further through walls; 5 GHz is faster but fades sooner.
+
+**6. MAC addresses lie a little.**
+The first three bytes (the OUI) identify the maker, but most modern phones use a **randomised, locally administered MAC** per network (the second-lowest bit of the first byte is set, so addresses start with `x2`, `x6`, `xA` or `xE`). Vendor lookup returns nothing for them, so the router's DHCP hostname is the better label. Addresses with the lowest bit set are multicast groups, not devices.
+
+**7. Dual-stack surprises: `localhost` isn't always fast.**
+`localhost` resolves to IPv6 `::1` first. The agent only listens on IPv4 `127.0.0.1`, so every request waited about 2 seconds for the IPv6 attempt to fail before falling back. Use the exact address the server listens on.
+
+**8. Throughput, latency and the 5G link are different problems.**
+A good signal (−84 dBm, SINR 24.5 dB) still gave 28 Mbps, because the cell allocated a 40 MHz channel with no carrier aggregation. Bandwidth, latency and radio quality each need their own measurement.
+
+**9. Network data is untrusted input.**
+Any device on the WiFi picks its own DHCP hostname, so a name like `<img onerror=…>` would run code in a dashboard that inserts names as HTML. Everything from the network gets escaped. The same goes for exposure: an agent with Wake-on-LAN and port-scan endpoints must never be reachable from the internet without a login.
+
+**10. Admin APIs leak more than you expect.**
+The router's admin API returns the WiFi key in plain text to any admin session. If the admin password equals the WiFi password, anyone on the WiFi effectively has admin. Use separate passwords.
+
+---
+
 ## Run it
 
 ```powershell
