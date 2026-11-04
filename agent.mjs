@@ -664,7 +664,8 @@ let routerReady = false;
 setInterval(async () => {
   try {
     if (!ROUTER_PASS) return;
-    await router.login(ROUTER_USER, ROUTER_PASS);
+    if (!routerReady) {
+      await router.login(ROUTER_USER, ROUTER_PASS);
       routerReady = true;
     }
     const snap = await router.snapshot();
