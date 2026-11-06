@@ -21,7 +21,10 @@ if (-not (Test-Path $cfg)) {
 }
 
 # Login task: hidden window, no browser pop-up at login.
-$arg = "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command `"& '$node' '$here\agent.mjs' --no-browser; exit `$LASTEXITCODE`""
+# Task Scheduler's restart setting only covers a task that fails to *start*, not an agent
+# that exits later, so the loop does the restarting. 30 s apart: if another copy already
+# holds the port, this one exits at once and we don't want to spin.
+$arg = "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command `"while (`$true) { & '$node' '$here\agent.mjs' --no-browser; Start-Sleep -Seconds 30 }`""
 $action = New-ScheduledTaskAction -Execute $ps -Argument $arg -WorkingDirectory $here
 $trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1) -ExecutionTimeLimit ([TimeSpan]::Zero)
